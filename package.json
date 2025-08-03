@@ -12,10 +12,10 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
-    "web": "bun run --filter='@shadow-protocol/web' dev",
-    "web:dev": "bun run --filter='@shadow-protocol/web' dev",
-    "web:build": "bun run --filter='@shadow-protocol/web' build",
-    "web:start": "bun run --filter='@shadow-protocol/web' start",
+    "web": "turbo run dev --filter=@shadow-protocol/web",
+    "web:dev": "turbo run dev --filter=@shadow-protocol/web",
+    "web:build": "turbo run build --filter=@shadow-protocol/web",
+    "web:start": "turbo run start --filter=@shadow-protocol/web",
     "program:build": "bun run --filter='@shadow-protocol/programs' build",
     "program:test": "bun run --filter='@shadow-protocol/programs' test",
     "program:deploy": "bun run --filter='@shadow-protocol/programs' deploy",
@@ -25,10 +25,12 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "turbo": "^2.5.5",
     "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
     "bun": ">=1.0.0"
-  }
+  },
+  "packageManager": "bun@1.2.19"
 }
