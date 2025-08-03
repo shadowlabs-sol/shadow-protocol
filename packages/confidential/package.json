@@ -1,0 +1,19 @@
+{
+    "name": "@shadow-protocol/confidential",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+      "build": "arcium build",
+      "test": "arcium test",
+      "clean": "arcium clean",
+      "deploy": "arcium deploy --cluster-offset 2326510165 --keypair-path ~/.config/solana/id.json -ud"
+    },
+    "dependencies": {
+      "arcis": "^0.1.0"
+    },
+    "devDependencies": {
+      "@arcium-hq/client": "^0.1.0",
+      "@types/node": "^20.0.0",
+      "typescript": "^5.0.0"
+    }
+  }

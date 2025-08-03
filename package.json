@@ -1,0 +1,32 @@
+{
+  "name": "shadow-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter='*' build",
+    "dev": "bun run --filter='*' dev",
+    "test": "bun run --filter='*' test",
+    "lint": "bun run --filter='*' lint",
+    "clean": "bun run --filter='*' clean",
+    "program:build": "bun run --filter='@shadow-protocol/programs' build",
+    "program:test": "bun run --filter='@shadow-protocol/programs' test",
+    "program:deploy": "bun run --filter='@shadow-protocol/programs' deploy",
+    "confidential:build": "bun run --filter='@shadow-protocol/confidential' build",
+    "confidential:test": "bun run --filter='@shadow-protocol/confidential' test",
+    "app:dev": "bun run --filter='@shadow-protocol/app' dev",
+    "app:build": "bun run --filter='@shadow-protocol/app' build",
+    "setup": "bun install && bun run program:build && bun run confidential:build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
+  }
+}
