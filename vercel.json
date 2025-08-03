@@ -50,11 +50,6 @@
       ]
     }
   ],
-  "env": {
-    "NEXT_PUBLIC_SOLANA_RPC": "@solana_rpc_url",
-    "NEXT_PUBLIC_SOLANA_NETWORK": "@solana_network",
-    "NEXT_PUBLIC_SHADOW_PROGRAM_ID": "@shadow_program_id"
-  },
   "build": {
     "env": {
       "NODE_ENV": "production"
