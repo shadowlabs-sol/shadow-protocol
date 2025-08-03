@@ -4,7 +4,6 @@
   "outputDirectory": "apps/web/.next",
   "installCommand": "bun install",
   "framework": "nextjs",
-  "rootDirectory": "./",
   "rewrites": [
     {
       "source": "/(.*)",
