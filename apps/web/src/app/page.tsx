@@ -1,192 +1,216 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { motion } from 'framer-motion';
-import { 
-  Shield, 
-  Eye, 
-  Clock, 
-  TrendingUp, 
-  Lock,
-  ArrowRight,
-  Zap
-} from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { AuctionGrid } from '@/components/auctions/AuctionGrid';
-import { CreateAuctionModal } from '@/components/auctions/CreateAuctionModal';
-import { StatsCard } from '@/components/dashboard/StatsCard';
-import { useShadowProtocol } from '@/hooks/useShadowProtocol';
-import { AuctionType } from '@shadow-protocol/shared';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, Lock, Shield, Zap, Eye, Users, Award, ChevronDown } from 'lucide-react';
 
-export default function HomePage() {
-  const { connected } = useWallet();
-  const { client, auctions, loading } = useShadowProtocol();
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [stats, setStats] = useState({
-    totalAuctions: 0,
-    activeAuctions: 0,
-    totalVolume: 0,
-    averageBids: 0,
-  });
+export default function Home() {
+  const [mounted, setMounted] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
 
   useEffect(() => {
-    if (auctions) {
-      const activeCount = auctions.filter(a => a.status === 1).length;
-      const totalVolume = auctions.reduce((sum, a) => sum + (a.winningAmount || 0), 0);
-      const avgBids = auctions.length > 0 ? 
-        auctions.reduce((sum, a) => sum + a.bidCount, 0) / auctions.length : 0;
+    setMounted(true);
+  }, []);
 
-      setStats({
-        totalAuctions: auctions.length,
-        activeAuctions: activeCount,
-        totalVolume,
-        averageBids: Math.round(avgBids * 10) / 10,
-      });
-    }
-  }, [auctions]);
+  if (!mounted) return null;
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-shadow-900 via-shadow-800 to-shadow-900 text-white">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Background Elements */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-black/5 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-black/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-black/3 rounded-full blur-4xl" />
+      </div>
+
+      {/* Navigation */}
+      <nav className="relative z-50 px-8 py-6 md:px-16 md:py-8">
+        <div className="flex items-center justify-between">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center space-x-2"
           >
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-shadow-800/50 border border-shadow-700 mb-8">
-              <Shield className="w-4 h-4 mr-2 text-auction-sealed" />
-              <span className="text-sm font-medium">Powered by Arcium MPC Technology</span>
-            </div>
-
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-shadow-200 to-shadow-400 bg-clip-text text-transparent">
-              Privacy-First Auctions
-            </h1>
-            
-            <p className="text-xl lg:text-2xl text-shadow-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              The first truly private auction platform on Solana. Create and participate in 
-              sealed-bid auctions with complete privacy until settlement.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              {connected ? (
-                <>
-                  <Button
-                    onClick={() => setShowCreateModal(true)}
-                    size="lg"
-                    className="bg-auction-sealed hover:bg-auction-sealed/80 text-white px-8 py-4 text-lg font-semibold"
-                  >
-                    Create Auction
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-shadow-600 text-white hover:bg-shadow-800 px-8 py-4 text-lg"
-                    onClick={() => document.getElementById('auctions')?.scrollIntoView({ behavior: 'smooth' })}
-                  >
-                    Browse Auctions
-                  </Button>
-                </>
-              ) : (
-                <div className="text-center">
-                  <p className="text-shadow-400 mb-4">Connect your wallet to get started</p>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-shadow-600 text-white hover:bg-shadow-800"
-                  >
-                    Connect Wallet
-                  </Button>
-                </div>
-              )}
-            </div>
+            <div className="w-8 h-8 bg-black rounded-sm" />
+            <span className="text-xl font-medium tracking-tight">Shadow</span>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="hidden md:flex items-center space-x-8"
+          >
+            <a href="#features" className="text-sm text-black/60 hover:text-black transition-smooth">Features</a>
+            <a href="#how" className="text-sm text-black/60 hover:text-black transition-smooth">How it Works</a>
+            <a href="#security" className="text-sm text-black/60 hover:text-black transition-smooth">Security</a>
+            <button className="px-4 py-2 text-sm bg-black text-white rounded-full hover:bg-black/90 transition-smooth">
+              Launch App
+            </button>
           </motion.div>
         </div>
-      </section>
+      </nav>
 
-      {/* Features Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Section */}
+      <section className="relative z-10 px-8 py-20 md:px-16 md:py-32">
+        <motion.div
+          style={{ opacity, scale }}
+          className="max-w-6xl mx-auto"
+        >
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-center"
           >
-            <h2 className="text-4xl font-bold text-shadow-900 mb-4">
-              Why Shadow Protocol?
-            </h2>
-            <p className="text-xl text-shadow-600 max-w-2xl mx-auto">
-              Traditional auctions are broken. We fix them with cutting-edge cryptography.
+            <div className="inline-flex items-center space-x-2 px-4 py-2 mb-8 bg-black/5 backdrop-blur-sm rounded-full">
+              <Shield className="w-4 h-4" />
+              <span className="text-xs font-medium uppercase tracking-wider">Zero-Knowledge Auctions</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-light leading-tight tracking-tight mb-6">
+              Privacy is the new
+              <br />
+              <span className="font-medium">transparency</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-black/60 max-w-2xl mx-auto mb-12">
+              Shadow Protocol enables truly private auctions on-chain. 
+              No front-running. No manipulation. Just pure market dynamics.
             </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button className="group px-8 py-4 bg-black text-white rounded-full hover:bg-black/90 transition-smooth flex items-center justify-center space-x-2">
+                <span>Start Auctioning</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-smooth" />
+              </button>
+              <button className="px-8 py-4 bg-white border border-black/10 rounded-full hover:bg-black/5 transition-smooth">
+                Read Whitepaper
+              </button>
+            </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1 }}
+            className="flex justify-center mt-20"
+          >
+            <ChevronDown className="w-6 h-6 animate-bounce" />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Features Grid */}
+      <section id="features" className="relative z-10 px-8 py-20 md:px-16">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
             {[
               {
-                icon: <Eye className="w-8 h-8" />,
-                title: "Complete Privacy",
-                description: "Bids remain encrypted until auction settlement. No front-running, no manipulation.",
-                color: "text-auction-sealed"
+                icon: Lock,
+                title: "Encrypted Bids",
+                description: "All bid amounts remain completely encrypted until auction settlement"
               },
               {
-                icon: <Zap className="w-8 h-8" />,
-                title: "Instant Settlement",
-                description: "Powered by Arcium's MPC technology for fast, secure, and trustless settlements.",
-                color: "text-yellow-500"
-              },
-              {
-                icon: <Lock className="w-8 h-8" />,
+                icon: Eye,
                 title: "MEV Protection",
-                description: "Encrypted order flow eliminates MEV extraction and sandwich attacks.",
-                color: "text-auction-dutch"
+                description: "Eliminate front-running and sandwich attacks with private order flow"
               },
               {
-                icon: <TrendingUp className="w-8 h-8" />,
-                title: "Fair Price Discovery",
-                description: "True market prices without information leakage or bid manipulation.",
-                color: "text-green-500"
+                icon: Zap,
+                title: "Instant Settlement",
+                description: "Atomic execution ensures immediate and secure asset transfers"
               },
               {
-                icon: <Clock className="w-8 h-8" />,
-                title: "Multiple Formats",
-                description: "Sealed-bid, Dutch auctions, and batch settlements for any use case.",
-                color: "text-auction-batch"
+                icon: Shield,
+                title: "Provably Fair",
+                description: "Cryptographic proofs guarantee auction integrity without revealing data"
               },
               {
-                icon: <Shield className="w-8 h-8" />,
-                title: "Enterprise Ready",
-                description: "Institutional-grade privacy for high-value transactions and corporate use.",
-                color: "text-red-500"
+                icon: Users,
+                title: "Batch Auctions",
+                description: "Settle multiple auctions atomically for maximum efficiency"
+              },
+              {
+                icon: Award,
+                title: "Vickrey Auctions",
+                description: "Second-price sealed-bid auctions for true price discovery"
               }
             ].map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="group p-8 bg-white border border-black/5 rounded-2xl hover:border-black/10 transition-smooth"
               >
-                <Card className="p-6 h-full hover:shadow-auction-hover transition-shadow duration-300">
-                  <div className={`${feature.color} mb-4`}>
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl font-semibold text-shadow-900 mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-shadow-600">
-                    {feature.description}
-                  </p>
-                </Card>
+                <div className="w-12 h-12 bg-black/5 rounded-xl flex items-center justify-center mb-4 group-hover:bg-black/10 transition-smooth">
+                  <feature.icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">{feature.title}</h3>
+                <p className="text-sm text-black/60 leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how" className="relative z-10 px-8 py-20 md:px-16">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-5xl font-light mb-4">How it works</h2>
+            <p className="text-lg text-black/60">Simple, secure, seamless</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                step: "01",
+                title: "Create Auction",
+                description: "Set up your auction with encrypted reserve price and parameters"
+              },
+              {
+                step: "02", 
+                title: "Submit Bids",
+                description: "Bidders submit encrypted bids that remain private until settlement"
+              },
+              {
+                step: "03",
+                title: "Secure Settlement",
+                description: "MPC nodes determine winner without revealing losing bids"
+              }
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.15 }}
+                className="relative"
+              >
+                <div className="text-6xl font-thin text-black/10 mb-4">{item.step}</div>
+                <h3 className="text-xl font-medium mb-2">{item.title}</h3>
+                <p className="text-black/60">{item.description}</p>
+                {index < 2 && (
+                  <div className="hidden md:block absolute top-12 -right-4 w-8 h-[1px] bg-black/20" />
+                )}
               </motion.div>
             ))}
           </div>
@@ -194,91 +218,72 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      {connected && (
-        <section className="py-16 bg-shadow-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatsCard
-                title="Total Auctions"
-                value={stats.totalAuctions}
-                icon={<TrendingUp className="w-6 h-6" />}
-                trend={+12}
-              />
-              <StatsCard
-                title="Active Auctions"
-                value={stats.activeAuctions}
-                icon={<Clock className="w-6 h-6" />}
-                trend={+5}
-              />
-              <StatsCard
-                title="Total Volume"
-                value={`${(stats.totalVolume / 1000000).toFixed(1)}M SOL`}
-                icon={<Zap className="w-6 h-6" />}
-                trend={+25}
-              />
-              <StatsCard
-                title="Avg. Bids/Auction"
-                value={stats.averageBids}
-                icon={<Eye className="w-6 h-6" />}
-                trend={+8}
-              />
-            </div>
+      <section className="relative z-10 px-8 py-20 md:px-16 bg-black text-white">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+        </div>
+        <div className="relative max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: "$0", label: "Total Volume", suffix: "M" },
+              { value: "0", label: "Auctions Created" },
+              { value: "0", label: "Unique Bidders" },
+              { value: "100%", label: "Privacy Guaranteed" }
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <div className="text-3xl md:text-4xl font-light mb-2">
+                  {stat.value}{stat.suffix}
+                </div>
+                <div className="text-sm text-white/60">{stat.label}</div>
+              </motion.div>
+            ))}
           </div>
-        </section>
-      )}
-
-      {/* Active Auctions Section */}
-      <section id="auctions" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold text-shadow-900 mb-4">
-              {connected ? 'Active Auctions' : 'Example Auctions'}
-            </h2>
-            <p className="text-xl text-shadow-600 max-w-2xl mx-auto">
-              {connected 
-                ? 'Participate in live auctions with complete privacy'
-                : 'Connect your wallet to view and participate in real auctions'
-              }
-            </p>
-          </motion.div>
-
-          {connected ? (
-            <AuctionGrid 
-              auctions={auctions || []} 
-              loading={loading}
-              onCreateAuction={() => setShowCreateModal(true)}
-            />
-          ) : (
-            <div className="text-center py-16">
-              <div className="mb-8 text-shadow-400">
-                <Lock className="w-16 h-16 mx-auto mb-4" />
-                <p className="text-lg">Connect your wallet to view auctions</p>
-              </div>
-              <Button size="lg" className="bg-auction-sealed hover:bg-auction-sealed/80">
-                Connect Wallet
-              </Button>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Create Auction Modal */}
-      {showCreateModal && (
-        <CreateAuctionModal
-          open={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            // Refresh auctions
-          }}
-        />
-      )}
+      {/* CTA Section */}
+      <section className="relative z-10 px-8 py-20 md:px-16">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="max-w-4xl mx-auto text-center"
+        >
+          <h2 className="text-3xl md:text-5xl font-light mb-6">
+            Ready to auction in the shadows?
+          </h2>
+          <p className="text-lg text-black/60 mb-8">
+            Join the future of private, fair, and secure on-chain auctions.
+          </p>
+          <button className="group px-8 py-4 bg-black text-white rounded-full hover:bg-black/90 transition-smooth inline-flex items-center space-x-2">
+            <span>Launch Application</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-smooth" />
+          </button>
+        </motion.div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 px-8 py-12 md:px-16 border-t border-black/5">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center space-x-2 mb-4 md:mb-0">
+            <div className="w-6 h-6 bg-black rounded-sm" />
+            <span className="text-sm font-medium">Shadow Protocol</span>
+          </div>
+          <div className="flex items-center space-x-6">
+            <a href="#" className="text-sm text-black/60 hover:text-black transition-smooth">Docs</a>
+            <a href="#" className="text-sm text-black/60 hover:text-black transition-smooth">GitHub</a>
+            <a href="#" className="text-sm text-black/60 hover:text-black transition-smooth">Twitter</a>
+            <a href="#" className="text-sm text-black/60 hover:text-black transition-smooth">Discord</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

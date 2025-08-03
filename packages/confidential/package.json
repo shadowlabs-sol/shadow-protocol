@@ -3,16 +3,12 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-      "build": "arcium build",
-      "test": "arcium test",
-      "clean": "arcium clean",
-      "deploy": "arcium deploy --cluster-offset 2326510165 --keypair-path ~/.config/solana/id.json -ud"
-    },
-    "dependencies": {
-      "arcis": "^0.1.0"
+      "build": "echo 'Arcium CLI required for build'",
+      "test": "echo 'Arcium CLI required for test'",
+      "clean": "rm -rf target",
+      "deploy": "echo 'Arcium CLI required for deploy'"
     },
     "devDependencies": {
-      "@arcium-hq/client": "^0.1.0",
       "@types/node": "^20.0.0",
       "typescript": "^5.0.0"
     }

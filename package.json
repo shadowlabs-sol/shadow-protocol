@@ -7,18 +7,20 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "bun run --filter='*' build",
-    "dev": "bun run --filter='*' dev",
-    "test": "bun run --filter='*' test",
-    "lint": "bun run --filter='*' lint",
-    "clean": "bun run --filter='*' clean",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "web": "bun run --filter='@shadow-protocol/web' dev",
+    "web:dev": "bun run --filter='@shadow-protocol/web' dev",
+    "web:build": "bun run --filter='@shadow-protocol/web' build",
+    "web:start": "bun run --filter='@shadow-protocol/web' start",
     "program:build": "bun run --filter='@shadow-protocol/programs' build",
     "program:test": "bun run --filter='@shadow-protocol/programs' test",
     "program:deploy": "bun run --filter='@shadow-protocol/programs' deploy",
     "confidential:build": "bun run --filter='@shadow-protocol/confidential' build",
     "confidential:test": "bun run --filter='@shadow-protocol/confidential' test",
-    "app:dev": "bun run --filter='@shadow-protocol/app' dev",
-    "app:build": "bun run --filter='@shadow-protocol/app' build",
     "setup": "bun install && bun run program:build && bun run confidential:build"
   },
   "devDependencies": {

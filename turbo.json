@@ -1,5 +1,6 @@
 {
     "$schema": "https://turbo.build/schema.json",
+    "globalDependencies": ["**/.env.*local"],
     "pipeline": {
       "build": {
         "dependsOn": ["^build"],
@@ -8,25 +9,46 @@
           "build/**",
           "target/**",
           ".next/**",
-          "!.next/cache/**"
+          "!.next/cache/**",
+          "out/**"
+        ],
+        "env": [
+          "NODE_ENV",
+          "NEXT_PUBLIC_*"
         ]
       },
       "dev": {
         "cache": false,
-        "persistent": true
+        "persistent": true,
+        "env": [
+          "NODE_ENV",
+          "NEXT_PUBLIC_*"
+        ]
+      },
+      "start": {
+        "dependsOn": ["build"],
+        "cache": false
       },
       "test": {
         "dependsOn": ["build"],
-        "outputs": ["coverage/**"]
+        "outputs": ["coverage/**"],
+        "env": ["NODE_ENV"]
       },
       "lint": {
-        "outputs": []
+        "outputs": [],
+        "cache": true
       },
       "clean": {
         "cache": false
       },
       "deploy": {
-        "dependsOn": ["build", "test"]
+        "dependsOn": ["build", "test"],
+        "env": [
+          "VERCEL",
+          "VERCEL_ENV",
+          "VERCEL_URL",
+          "NEXT_PUBLIC_*"
+        ]
       }
     }
   }
