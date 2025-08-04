@@ -1,8 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx turbo run build --filter=@shadow-protocol/web",
-  "installCommand": "bun install",
   "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "installCommand": "bun install",
   "headers": [
     {
       "source": "/api/(.*)",
@@ -43,16 +44,6 @@
       ]
     }
   ],
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  },
-  "functions": {
-    "apps/web/src/app/api/*/route.ts": {
-      "maxDuration": 30
-    }
-  },
   "regions": ["iad1"],
   "trailingSlash": false,
   "cleanUrls": true
