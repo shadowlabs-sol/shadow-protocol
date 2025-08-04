@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd apps/web && bun run build",
+  "buildCommand": "npx turbo run build --filter=@shadow-protocol/web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "bun install",
-  "framework": "nextjs",
+  "framework": null,
   "rewrites": [
     {
       "source": "/(.*)",
