@@ -1,0 +1,122 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Auction {
+  id                   String   @id @default(uuid())
+  auctionId           BigInt   @unique
+  creator             String
+  assetMint           String
+  assetVault          String?
+  type                AuctionType
+  status              AuctionStatus @default(CREATED)
+  startTime           DateTime
+  endTime             DateTime
+  minimumBid          BigInt
+  reservePriceEncrypted Bytes?
+  reservePriceNonce   String?
+  currentPrice        BigInt?
+  priceDecreaseRate   BigInt?
+  startingPrice       BigInt?
+  bidCount            Int      @default(0)
+  winner              String?
+  winningAmount       BigInt?
+  settledAt           DateTime?
+  transactionHash     String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  bids                Bid[]
+  settlements         Settlement[]
+  
+  @@index([status])
+  @@index([creator])
+  @@index([endTime])
+}
+
+model Bid {
+  id                  String   @id @default(uuid())
+  auctionId          BigInt
+  auction            Auction  @relation(fields: [auctionDbId], references: [id])
+  auctionDbId        String
+  bidder             String
+  amountEncrypted    Bytes
+  encryptionPublicKey Bytes?
+  nonce              String
+  timestamp          DateTime
+  isWinner           Boolean  @default(false)
+  transactionHash    String?
+  createdAt          DateTime @default(now())
+  
+  @@index([auctionId])
+  @@index([bidder])
+  @@index([timestamp])
+}
+
+model Settlement {
+  id                  String   @id @default(uuid())
+  auctionId          BigInt
+  auction            Auction  @relation(fields: [auctionDbId], references: [id])
+  auctionDbId        String
+  winner             String
+  winningAmount      BigInt
+  settlementTime     DateTime
+  transactionHash    String
+  mpcComputationId   String?
+  callbackData       Bytes?
+  createdAt          DateTime @default(now())
+  
+  @@index([auctionId])
+}
+
+model MXEComputation {
+  id                  String   @id @default(uuid())
+  computationOffset   BigInt   @unique
+  programId          String
+  status             ComputationStatus @default(QUEUED)
+  inputData          Bytes
+  outputData         Bytes?
+  errorMessage       String?
+  queuedAt           DateTime @default(now())
+  startedAt          DateTime?
+  completedAt        DateTime?
+  
+  @@index([status])
+  @@index([programId])
+}
+
+model User {
+  id                  String   @id @default(uuid())
+  walletAddress      String   @unique
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  totalBids          Int      @default(0)
+  auctionsWon        Int      @default(0)
+  totalVolume        BigInt   @default(0)
+}
+
+enum AuctionType {
+  SEALED
+  DUTCH
+  BATCH
+}
+
+enum AuctionStatus {
+  CREATED
+  ACTIVE
+  ENDED
+  SETTLED
+  CANCELLED
+}
+
+enum ComputationStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
