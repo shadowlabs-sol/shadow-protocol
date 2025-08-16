@@ -3,6 +3,7 @@ name = "shadow-protocol"
 version = "0.1.0"
 description = "Shadow Protocol - Privacy-Preserving Auction Platform"
 edition = "2021"
+rust-version = "1.75.0"
 
 [lib]
 crate-type = ["cdylib", "lib"]
@@ -16,14 +17,12 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.29.0"
-anchor-spl = "0.29.0"
-arcium-anchor = "0.1.0"
-arcium-client = "0.1.0"
-arcium-macros = "0.1.0"
-solana-program = "~1.16"
-spl-token = "4.0"
-spl-associated-token-account = "2.0"
+anchor-lang = { version = "=0.29.0", features = ["init-if-needed"] }
+anchor-spl = { version = "=0.29.0" }
+# TODO: Fix version conflicts with Arcium packages
+# arcium-anchor = { version = "0.1.45" }
+# arcium-client = { version = "0.1.45" }
+# arcium-macros = { version = "0.1.45" }
 
 [dev-dependencies]
 solana-sdk = "~1.16"
