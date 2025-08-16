@@ -23,7 +23,7 @@ export const Dashboard: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'ended'>('all');
 
-  const filteredAuctions = auctions.filter(auction => {
+  const filteredAuctions = auctions.filter((auction: any) => {
     if (filter === 'all') return true;
     if (filter === 'active') return auction.status === 'active';
     if (filter === 'ended') return auction.status === 'ended' || auction.status === 'settled';

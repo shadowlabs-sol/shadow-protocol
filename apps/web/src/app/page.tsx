@@ -47,9 +47,9 @@ export default function Home() {
             <a href="#features" className="text-sm text-black/60 hover:text-black transition-smooth">Features</a>
             <a href="#how" className="text-sm text-black/60 hover:text-black transition-smooth">How it Works</a>
             <a href="#security" className="text-sm text-black/60 hover:text-black transition-smooth">Security</a>
-            <button className="px-4 py-2 text-sm bg-black text-white rounded-full hover:bg-black/90 transition-smooth">
+            <a href="/app" className="px-4 py-2 text-sm bg-black text-white rounded-full hover:bg-black/90 transition-smooth">
               Launch App
-            </button>
+            </a>
           </motion.div>
         </div>
       </nav>
@@ -83,10 +83,10 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="group px-8 py-4 bg-black text-white rounded-full hover:bg-black/90 transition-smooth flex items-center justify-center space-x-2">
+              <a href="/app" className="group px-8 py-4 bg-black text-white rounded-full hover:bg-black/90 transition-smooth flex items-center justify-center space-x-2">
                 <span>Start Auctioning</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-smooth" />
-              </button>
+              </a>
               <button className="px-8 py-4 bg-white border border-black/10 rounded-full hover:bg-black/5 transition-smooth">
                 Read Whitepaper
               </button>
@@ -262,10 +262,10 @@ export default function Home() {
           <p className="text-lg text-black/60 mb-8">
             Join the future of private, fair, and secure on-chain auctions.
           </p>
-          <button className="group px-8 py-4 bg-black text-white rounded-full hover:bg-black/90 transition-smooth inline-flex items-center space-x-2">
+          <a href="/app" className="group px-8 py-4 bg-black text-white rounded-full hover:bg-black/90 transition-smooth inline-flex items-center space-x-2">
             <span>Launch Application</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-smooth" />
-          </button>
+          </a>
         </motion.div>
       </section>
 

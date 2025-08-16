@@ -1,0 +1,1 @@
+2025-08-16T09:13:30.558890Z  WARN turborepo_filewatch: encountered error watching filesystem filewatching backend error: OS file watch limit reached. about ["/home/vivek/projects/shadow/shadow-protocol/apps/web/.next/server"]
