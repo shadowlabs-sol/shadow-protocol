@@ -1,21 +1,23 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount, Mint};
-use arcium_anchor::{
-    init_comp_def, queue_computation,
-    derive_cluster_pda, derive_comp_def_pda, derive_comp_pda, 
-    derive_execpool_pda, derive_mempool_pda, derive_mxe_pda,
-    comp_def_offset,
-    ARCIUM_CLOCK_ACCOUNT_ADDRESS, ARCIUM_STAKING_POOL_ACCOUNT_ADDRESS,
-};
-use arcium_client::idl::arcium::{
-    accounts::{ClockAccount, Cluster, ComputationDefinitionAccount, PersistentMXEAccount, StakingPoolAccount},
-    program::Arcium,
-    types::Argument,
-};
-use arcium_macros::{
-    arcium_callback, arcium_program, callback_accounts, 
-    init_computation_definition_accounts, queue_computation_accounts,
-};
+
+// TODO: Re-enable Arcium imports after fixing version conflicts
+// use arcium_anchor::{
+//     init_comp_def, queue_computation,
+//     derive_cluster_pda, derive_comp_def_pda, derive_comp_pda, 
+//     derive_execpool_pda, derive_mempool_pda, derive_mxe_pda,
+//     comp_def_offset,
+//     ARCIUM_CLOCK_ACCOUNT_ADDRESS, ARCIUM_STAKING_POOL_ACCOUNT_ADDRESS,
+// };
+// use arcium_client::idl::arcium::{
+//     accounts::{ClockAccount, Cluster, ComputationDefinitionAccount, PersistentMXEAccount, StakingPoolAccount},
+//     program::Arcium,
+//     types::Argument,
+// };
+// use arcium_macros::{
+//     arcium_callback, arcium_program, callback_accounts, 
+//     init_computation_definition_accounts, queue_computation_accounts,
+// };
 
 mod instructions;
 mod state;
@@ -29,11 +31,12 @@ use error::*;
 declare_id!("ShadowProtocol11111111111111111111111111111");
 
 // Computation definition offsets for encrypted instructions
-const COMP_DEF_OFFSET_SEALED_BID: u32 = comp_def_offset("sealed_bid_auction");
-const COMP_DEF_OFFSET_DUTCH_AUCTION: u32 = comp_def_offset("dutch_auction");
-const COMP_DEF_OFFSET_BATCH_SETTLEMENT: u32 = comp_def_offset("batch_settlement");
+// TODO: Re-enable after fixing Arcium imports
+// const COMP_DEF_OFFSET_SEALED_BID: u32 = comp_def_offset("sealed_bid_auction");
+// const COMP_DEF_OFFSET_DUTCH_AUCTION: u32 = comp_def_offset("dutch_auction");
+// const COMP_DEF_OFFSET_BATCH_SETTLEMENT: u32 = comp_def_offset("batch_settlement");
 
-#[arcium_program]
+#[program]
 pub mod shadow_protocol {
     use super::*;
 
@@ -142,55 +145,57 @@ pub mod shadow_protocol {
     // ========================================
     // Computation Definition Initialization
     // ========================================
+    // TODO: Re-enable after fixing Arcium imports
+    
+    // /// Initialize sealed-bid auction computation definition
+    // pub fn init_sealed_bid_comp_def(ctx: Context<InitSealedBidCompDef>) -> Result<()> {
+    //     init_comp_def(ctx.accounts, None)?;
+    //     Ok(())
+    // }
 
-    /// Initialize sealed-bid auction computation definition
-    pub fn init_sealed_bid_comp_def(ctx: Context<InitSealedBidCompDef>) -> Result<()> {
-        init_comp_def(ctx.accounts, None)?;
-        Ok(())
-    }
+    // /// Initialize Dutch auction computation definition
+    // pub fn init_dutch_auction_comp_def(ctx: Context<InitDutchAuctionCompDef>) -> Result<()> {
+    //     init_comp_def(ctx.accounts, None)?;
+    //     Ok(())
+    // }
 
-    /// Initialize Dutch auction computation definition
-    pub fn init_dutch_auction_comp_def(ctx: Context<InitDutchAuctionCompDef>) -> Result<()> {
-        init_comp_def(ctx.accounts, None)?;
-        Ok(())
-    }
-
-    /// Initialize batch settlement computation definition
-    pub fn init_batch_settlement_comp_def(ctx: Context<InitBatchSettlementCompDef>) -> Result<()> {
-        init_comp_def(ctx.accounts, None)?;
-        Ok(())
-    }
+    // /// Initialize batch settlement computation definition
+    // pub fn init_batch_settlement_comp_def(ctx: Context<InitBatchSettlementCompDef>) -> Result<()> {
+    //     init_comp_def(ctx.accounts, None)?;
+    //     Ok(())
+    // }
 
     // ========================================
     // Callback Instructions
     // ========================================
+    // TODO: Re-enable after fixing Arcium imports
+    
+    // /// Callback for sealed-bid auction settlement
+    // #[arcium_callback(encrypted_ix = "sealed_bid_auction")]
+    // pub fn sealed_bid_settlement_callback(
+    //     ctx: Context<SealedBidSettlementCallback>,
+    //     output: ComputationOutputs,
+    // ) -> Result<()> {
+    //     instructions::handle_sealed_bid_settlement(ctx, output)
+    // }
 
-    /// Callback for sealed-bid auction settlement
-    #[arcium_callback(encrypted_ix = "sealed_bid_auction")]
-    pub fn sealed_bid_settlement_callback(
-        ctx: Context<SealedBidSettlementCallback>,
-        output: ComputationOutputs,
-    ) -> Result<()> {
-        instructions::handle_sealed_bid_settlement(ctx, output)
-    }
+    // /// Callback for Dutch auction execution
+    // #[arcium_callback(encrypted_ix = "dutch_auction")]
+    // pub fn dutch_auction_callback(
+    //     ctx: Context<DutchAuctionCallback>,
+    //     output: ComputationOutputs,
+    // ) -> Result<()> {
+    //     instructions::handle_dutch_auction_result(ctx, output)
+    // }
 
-    /// Callback for Dutch auction execution
-    #[arcium_callback(encrypted_ix = "dutch_auction")]
-    pub fn dutch_auction_callback(
-        ctx: Context<DutchAuctionCallback>,
-        output: ComputationOutputs,
-    ) -> Result<()> {
-        instructions::handle_dutch_auction_result(ctx, output)
-    }
-
-    /// Callback for batch settlement
-    #[arcium_callback(encrypted_ix = "batch_settlement")]
-    pub fn batch_settlement_callback(
-        ctx: Context<BatchSettlementCallback>,
-        output: ComputationOutputs,
-    ) -> Result<()> {
-        instructions::handle_batch_settlement(ctx, output)
-    }
+    // /// Callback for batch settlement
+    // #[arcium_callback(encrypted_ix = "batch_settlement")]
+    // pub fn batch_settlement_callback(
+    //     ctx: Context<BatchSettlementCallback>,
+    //     output: ComputationOutputs,
+    // ) -> Result<()> {
+    //     instructions::handle_batch_settlement(ctx, output)
+    // }
 
     // ========================================
     // Admin Instructions
