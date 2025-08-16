@@ -1,10 +1,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Token, TokenAccount, Mint};
-use arcium_anchor::{queue_computation};
-use arcium_client::idl::arcium::{
-    accounts::{ComputationDefinitionAccount, PersistentMXEAccount},
-    types::Argument,
-};
+// TODO: Re-enable after fixing Arcium imports
+// use arcium_anchor::{queue_computation};
+// use arcium_client::idl::arcium::{
+//     accounts::{ComputationDefinitionAccount, PersistentMXEAccount},
+//     types::Argument,
+// };
 use crate::state::*;
 use crate::error::ShadowProtocolError;
 
@@ -46,26 +47,27 @@ pub fn submit_encrypted_bid(
     
     auction.bid_count += 1;
     
+    // TODO: Re-enable MPC processing after fixing Arcium imports
     // Queue computation for MPC processing if auction is ending soon
-    let time_until_end = auction.end_time - clock.unix_timestamp;
-    if time_until_end < 300 {
-        // Queue if less than 5 minutes remaining
-        let mut args = Vec::new();
-        args.push(Argument {
-            name: "auction_id".to_string(),
-            value: auction_id.to_le_bytes().to_vec(),
-        });
-        args.push(Argument {
-            name: "bid_data".to_string(),
-            value: bid_amount_encrypted.to_vec(),
-        });
-        
-        queue_computation(
-            ctx.accounts.queue_computation_ctx(),
-            computation_offset,
-            args,
-        )?;
-    }
+    // let time_until_end = auction.end_time - clock.unix_timestamp;
+    // if time_until_end < 300 {
+    //     // Queue if less than 5 minutes remaining
+    //     let mut args = Vec::new();
+    //     args.push(Argument {
+    //         name: "auction_id".to_string(),
+    //         value: auction_id.to_le_bytes().to_vec(),
+    //     });
+    //     args.push(Argument {
+    //         name: "bid_data".to_string(),
+    //         value: bid_amount_encrypted.to_vec(),
+    //     });
+    //     
+    //     queue_computation(
+    //         ctx.accounts.queue_computation_ctx(),
+    //         computation_offset,
+    //         args,
+    //     )?;
+    // }
     
     emit!(BidSubmitted {
         auction_id,
@@ -116,26 +118,27 @@ pub fn submit_dutch_bid(
     auction.winning_amount = current_price;
     auction.bid_count = 1;
     
+    // TODO: Re-enable MPC computation after fixing Arcium imports
     // Queue MPC computation to verify against hidden reserve
-    let mut args = Vec::new();
-    args.push(Argument {
-        name: "auction_id".to_string(),
-        value: auction_id.to_le_bytes().to_vec(),
-    });
-    args.push(Argument {
-        name: "winning_amount".to_string(),
-        value: current_price.to_le_bytes().to_vec(),
-    });
-    args.push(Argument {
-        name: "reserve_encrypted".to_string(),
-        value: auction.reserve_price_encrypted.to_vec(),
-    });
-    
-    queue_computation(
-        ctx.accounts.queue_computation_ctx(),
-        0, // Dutch auction computation offset
-        args,
-    )?;
+    // let mut args = Vec::new();
+    // args.push(Argument {
+    //     name: "auction_id".to_string(),
+    //     value: auction_id.to_le_bytes().to_vec(),
+    // });
+    // args.push(Argument {
+    //     name: "winning_amount".to_string(),
+    //     value: current_price.to_le_bytes().to_vec(),
+    // });
+    // args.push(Argument {
+    //     name: "reserve_encrypted".to_string(),
+    //     value: auction.reserve_price_encrypted.to_vec(),
+    // });
+    // 
+    // queue_computation(
+    //     ctx.accounts.queue_computation_ctx(),
+    //     0, // Dutch auction computation offset
+    //     args,
+    // )?;
     
     emit!(BidSubmitted {
         auction_id,
@@ -175,9 +178,9 @@ pub struct SubmitBid<'info> {
     )]
     pub protocol_state: Account<'info, ProtocolState>,
     
-    // Arcium accounts for MPC computation
-    pub computation_definition: Account<'info, ComputationDefinitionAccount>,
-    pub mxe: Account<'info, PersistentMXEAccount>,
+    // TODO: Re-enable after fixing Arcium imports
+    // pub computation_definition: Account<'info, ComputationDefinitionAccount>,
+    // pub mxe: Account<'info, PersistentMXEAccount>,
     
     pub system_program: Program<'info, System>,
 }
@@ -202,9 +205,9 @@ pub struct SubmitDutchBid<'info> {
     )]
     pub protocol_state: Account<'info, ProtocolState>,
     
-    // Arcium accounts for MPC computation
-    pub computation_definition: Account<'info, ComputationDefinitionAccount>,
-    pub mxe: Account<'info, PersistentMXEAccount>,
+    // TODO: Re-enable after fixing Arcium imports
+    // pub computation_definition: Account<'info, ComputationDefinitionAccount>,
+    // pub mxe: Account<'info, PersistentMXEAccount>,
     
     pub system_program: Program<'info, System>,
 }
