@@ -25,8 +25,8 @@ export const Dashboard: React.FC = () => {
 
   const filteredAuctions = auctions.filter((auction: any) => {
     if (filter === 'all') return true;
-    if (filter === 'active') return auction.status === 'active';
-    if (filter === 'ended') return auction.status === 'ended' || auction.status === 'settled';
+    if (filter === 'active') return auction.status === 'ACTIVE';
+    if (filter === 'ended') return auction.status === 'ENDED' || auction.status === 'SETTLED';
     return true;
   });
 
@@ -168,7 +168,7 @@ export const Dashboard: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAuctions.map((auction) => (
+            {filteredAuctions.map((auction: any) => (
               <AuctionCard
                 key={auction.id}
                 auction={auction}

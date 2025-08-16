@@ -15,10 +15,13 @@
       "lint": "eslint src --ext .ts"
     },
     "dependencies": {
+      "@arcium-hq/client": "^0.2.0",
       "@coral-xyz/anchor": "^0.30.1",
       "@noble/curves": "^1.7.0",
+      "@noble/hashes": "^1.6.2",
       "@solana/web3.js": "^1.95.5",
       "@solana/spl-token": "^0.4.9",
+      "@stablelib/x25519": "^2.0.0",
       "bs58": "^6.0.0",
       "crypto-js": "^4.2.0"
     },

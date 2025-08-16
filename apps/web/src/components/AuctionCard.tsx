@@ -16,8 +16,9 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
   const [showBidInput, setShowBidInput] = useState(false);
 
   const timeRemaining = () => {
-    const now = Date.now() / 1000;
-    const remaining = auction.endTime - now;
+    const now = Date.now();
+    const endTime = new Date(auction.endTime).getTime();
+    const remaining = (endTime - now) / 1000;
     if (remaining <= 0) return 'Ended';
     
     const hours = Math.floor(remaining / 3600);
@@ -26,12 +27,12 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
   };
 
   const getCurrentPrice = () => {
-    if (auction.type === 'dutch' && auction.currentPrice && auction.priceDecreaseRate) {
-      const elapsed = Date.now() / 1000 - auction.startTime;
-      const currentPrice = auction.currentPrice - (auction.priceDecreaseRate * elapsed);
-      return Math.max(currentPrice, auction.minimumBid);
+    if (auction.type === 'DUTCH' && auction.currentPrice && auction.priceDecreaseRate) {
+      const elapsed = (Date.now() - new Date(auction.startTime).getTime()) / 1000;
+      const currentPrice = parseInt(auction.currentPrice) - (parseInt(auction.priceDecreaseRate) * elapsed);
+      return Math.max(currentPrice, parseInt(auction.minimumBid));
     }
-    return auction.minimumBid;
+    return parseInt(auction.minimumBid);
   };
 
   const handleBidSubmit = () => {
@@ -43,7 +44,7 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
     }
   };
 
-  const isEnded = Date.now() / 1000 > auction.endTime;
+  const isEnded = Date.now() > new Date(auction.endTime).getTime();
 
   return (
     <motion.div
@@ -55,18 +56,18 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
         <div>
           <h3 className="text-xl font-bold text-white mb-1">{auction.id}</h3>
           <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
-            auction.type === 'sealed' ? 'bg-purple-500/20 text-purple-400' :
-            auction.type === 'dutch' ? 'bg-blue-500/20 text-blue-400' :
+            auction.type === 'SEALED' ? 'bg-purple-500/20 text-purple-400' :
+            auction.type === 'DUTCH' ? 'bg-blue-500/20 text-blue-400' :
             'bg-green-500/20 text-green-400'
           }`}>
-            {auction.type === 'sealed' ? 'Sealed Bid' : 
-             auction.type === 'dutch' ? 'Dutch Auction' : 'Batch'}
+            {auction.type === 'SEALED' ? 'Sealed Bid' : 
+             auction.type === 'DUTCH' ? 'Dutch Auction' : 'Batch'}
           </span>
         </div>
         <div className={`px-3 py-1 rounded-full text-xs ${
-          auction.status === 'active' ? 'bg-green-500/20 text-green-400' :
-          auction.status === 'ended' ? 'bg-yellow-500/20 text-yellow-400' :
-          auction.status === 'settled' ? 'bg-gray-500/20 text-gray-400' :
+          auction.status === 'ACTIVE' ? 'bg-green-500/20 text-green-400' :
+          auction.status === 'ENDED' ? 'bg-yellow-500/20 text-yellow-400' :
+          auction.status === 'SETTLED' ? 'bg-gray-500/20 text-gray-400' :
           'bg-red-500/20 text-red-400'
         }`}>
           {auction.status}
@@ -84,14 +85,14 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
           <span className="text-sm">{auction.bidCount} bids</span>
         </div>
 
-        {auction.type === 'dutch' && (
+        {auction.type === 'DUTCH' && (
           <div className="flex items-center gap-2 text-gray-400">
             <TrendingDown className="w-4 h-4" />
             <span className="text-sm">Current: ${getCurrentPrice().toLocaleString()}</span>
           </div>
         )}
 
-        {auction.type === 'sealed' && (
+        {auction.type === 'SEALED' && (
           <div className="flex items-center gap-2 text-gray-400">
             <Lock className="w-4 h-4" />
             <span className="text-sm">Min bid: ${auction.minimumBid.toLocaleString()}</span>
@@ -99,7 +100,7 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
         )}
       </div>
 
-      {auction.status === 'active' && !isEnded && (
+      {auction.status === 'ACTIVE' && !isEnded && (
         <>
           {!showBidInput ? (
             <button
@@ -137,7 +138,7 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
         </>
       )}
 
-      {auction.status === 'ended' && !auction.winner && (
+      {auction.status === 'ENDED' && !auction.winner && (
         <button
           onClick={() => onSettle(auction.id)}
           className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity"
