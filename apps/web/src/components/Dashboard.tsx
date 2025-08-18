@@ -15,8 +15,8 @@ import { AuctionCard } from './AuctionCard';
 import { CreateAuctionModal } from './CreateAuctionModal';
 import { AuctionManagementModal } from './AuctionManagementModal';
 import { AuctionFlowIndicator } from './AuctionFlowIndicator';
-import { TestAuction } from './TestAuction';
 import { WalletBalance } from './WalletBalance';
+import { SettlementNotification } from './SettlementNotification';
 import toast, { Toaster } from 'react-hot-toast';
 
 // Countdown timer component
@@ -197,9 +197,22 @@ export const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'ending' | 'popular'>('newest');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [settlementDetails, setSettlementDetails] = useState<any>(null);
 
   // Real activities will be fetched from blockchain events
   const [activities] = useState<any[]>([]);
+
+  // Check for settlement notifications from window
+  useEffect(() => {
+    const checkSettlement = setInterval(() => {
+      if ((window as any).__lastSettlement) {
+        setSettlementDetails((window as any).__lastSettlement);
+        delete (window as any).__lastSettlement;
+      }
+    }, 500);
+
+    return () => clearInterval(checkSettlement);
+  }, []);
 
   // Calculate statistics
   const stats = {
@@ -670,9 +683,6 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Test Controls (only in development) */}
-      {process.env.NODE_ENV === 'development' && <TestAuction />}
-
       {/* Modals */}
       <AnimatePresence>
         {showCreateModal && (
@@ -744,6 +754,14 @@ export const Dashboard: React.FC = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Settlement Notification */}
+      {settlementDetails && (
+        <SettlementNotification
+          details={settlementDetails}
+          onClose={() => setSettlementDetails(null)}
+        />
+      )}
     </div>
   );
 };

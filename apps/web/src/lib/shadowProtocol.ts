@@ -100,10 +100,18 @@ export async function encryptBidAmount(
     try {
       const sharedSecret = x25519.getSharedSecret(privateKey, mxePublicKey);
       const cipher = new RescueCipher(sharedSecret);
-      const encryptedAmount = cipher.encrypt([amountInLamports], nonce);
+      const encryptedAmountBigInt = cipher.encrypt([amountInLamports], nonce);
+      
+      // Convert BigInt to Uint8Array
+      const encryptedAmount = new Uint8Array(32);
+      const hexString = encryptedAmountBigInt[0].toString(16);
+      const bytes = hexString.padStart(64, '0');
+      for (let i = 0; i < 32; i++) {
+        encryptedAmount[i] = parseInt(bytes.substring(i * 2, i * 2 + 2), 16);
+      }
       
       return {
-        encryptedAmount: encryptedAmount[0],
+        encryptedAmount,
         publicKey,
         nonce
       };
@@ -114,8 +122,9 @@ export async function encryptBidAmount(
   
   // Fallback for development
   const encryptedAmount = new Uint8Array(32);
-  const amountBuffer = Buffer.from(amountInLamports.toString());
-  encryptedAmount.set(amountBuffer);
+  const encoder = new TextEncoder();
+  const amountBytes = encoder.encode(amountInLamports.toString());
+  encryptedAmount.set(amountBytes.slice(0, 32));
   
   return {
     encryptedAmount,

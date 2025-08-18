@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Users, DollarSign, Shield, TrendingDown, Award, ArrowRight, Loader2, MoreHorizontal, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { AuctionTimer } from './AuctionTimer';
 import toast from 'react-hot-toast';
 
 interface AuctionCardProps {
@@ -123,6 +124,15 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSett
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Timer for active auctions */}
+              {auction.status === 'ACTIVE' && auction.endTime && (
+                <AuctionTimer
+                  auctionId={auction.auctionId}
+                  endTime={auction.endTime}
+                  status={auction.status}
+                />
+              )}
+              
               {/* Status Badge with Glow */}
               <div className="relative">
                 <div className={`absolute inset-0 bg-gradient-to-r ${getStatusColor()} rounded-full blur-md opacity-60`} />
