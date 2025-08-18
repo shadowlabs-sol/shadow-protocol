@@ -69,3 +69,20 @@ tmp/
 temp/
 
 .turbo
+
+# Lock files (using bun)
+package-lock.json
+yarn.lock
+
+# Deployment files
+DEPLOYMENT.md
+ARCIUM_SETUP.md
+deployer-keypair.json
+*-keypair.json
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Database
+*.db
+*.db-journal
