@@ -2,160 +2,284 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Users, TrendingDown, Lock, ChevronRight } from 'lucide-react';
-import { Auction } from '@/context/ShadowProtocolContext';
+import { Clock, Users, DollarSign, Shield, TrendingDown, Award, ArrowRight, Loader2, Settings, MoreVertical } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import toast from 'react-hot-toast';
 
 interface AuctionCardProps {
-  auction: Auction;
-  onBid: (auctionId: string, amount: number) => void;
-  onSettle: (auctionId: string) => void;
+  auction: any;
+  onBid: (auctionId: string, amount: number) => Promise<void>;
+  onSettle: (auctionId: string) => Promise<void>;
+  onManage?: () => void;
+  isCreator?: boolean;
 }
 
-export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSettle }) => {
+export const AuctionCard: React.FC<AuctionCardProps> = ({ auction, onBid, onSettle, onManage, isCreator }) => {
   const [bidAmount, setBidAmount] = useState('');
   const [showBidInput, setShowBidInput] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const timeRemaining = () => {
-    const now = Date.now();
-    const endTime = new Date(auction.endTime).getTime();
-    const remaining = (endTime - now) / 1000;
-    if (remaining <= 0) return 'Ended';
-    
-    const hours = Math.floor(remaining / 3600);
-    const minutes = Math.floor((remaining % 3600) / 60);
-    return `${hours}h ${minutes}m`;
-  };
-
-  const getCurrentPrice = () => {
-    if (auction.type === 'DUTCH' && auction.currentPrice && auction.priceDecreaseRate) {
-      const elapsed = (Date.now() - new Date(auction.startTime).getTime()) / 1000;
-      const currentPrice = parseInt(auction.currentPrice) - (parseInt(auction.priceDecreaseRate) * elapsed);
-      return Math.max(currentPrice, parseInt(auction.minimumBid));
-    }
-    return parseInt(auction.minimumBid);
-  };
-
-  const handleBidSubmit = () => {
+  const handleBid = async () => {
     const amount = parseFloat(bidAmount);
-    if (amount > 0) {
-      onBid(auction.id, amount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid bid amount');
+      return;
+    }
+
+    const minBidInSol = auction.minimumBid ? parseFloat(auction.minimumBid) / 1e9 : 0;
+    if (minBidInSol && amount < minBidInSol) {
+      toast.error(`Minimum bid is ${minBidInSol.toFixed(4)} SOL`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onBid(auction.auctionId, amount);
       setBidAmount('');
       setShowBidInput(false);
+      toast.success('Bid submitted successfully!');
+    } catch (error) {
+      console.error('Failed to submit bid:', error);
+      toast.error('Failed to submit bid');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const isEnded = Date.now() > new Date(auction.endTime).getTime();
+  const handleSettle = async () => {
+    setIsSubmitting(true);
+    try {
+      await onSettle(auction.auctionId);
+      toast.success('Auction settled successfully!');
+    } catch (error) {
+      console.error('Failed to settle auction:', error);
+      toast.error('Failed to settle auction');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const timeRemaining = auction.endTime ? formatDistanceToNow(new Date(auction.endTime)) : 'N/A';
+  const isActive = auction.status === 'ACTIVE';
+  const isEnded = auction.status === 'ENDED' || auction.status === 'SETTLED';
+  const canSettle = auction.status === 'ENDED';
+
+  const getStatusColor = () => {
+    switch (auction.status) {
+      case 'ACTIVE': return 'from-green-500 to-emerald-500';
+      case 'ENDED': return 'from-yellow-500 to-orange-500';
+      case 'SETTLED': return 'from-blue-500 to-indigo-500';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
+
+  const getTypeIcon = () => {
+    switch (auction.type) {
+      case 'SEALED': return <Shield className="w-4 h-4" />;
+      case 'DUTCH': return <TrendingDown className="w-4 h-4" />;
+      default: return <Award className="w-4 h-4" />;
+    }
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-purple-500/50 transition-colors"
+      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 300 }}
+      className="group relative bg-gradient-to-br from-gray-900/90 to-gray-800/90 border border-gray-800/50 rounded-2xl overflow-hidden backdrop-blur-xl hover:border-purple-500/50 transition-all duration-300"
     >
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-xl font-bold text-white mb-1">{auction.id}</h3>
-          <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
-            auction.type === 'SEALED' ? 'bg-purple-500/20 text-purple-400' :
-            auction.type === 'DUTCH' ? 'bg-blue-500/20 text-blue-400' :
-            'bg-green-500/20 text-green-400'
-          }`}>
-            {auction.type === 'SEALED' ? 'Sealed Bid' : 
-             auction.type === 'DUTCH' ? 'Dutch Auction' : 'Batch'}
-          </span>
-        </div>
-        <div className={`px-3 py-1 rounded-full text-xs ${
-          auction.status === 'ACTIVE' ? 'bg-green-500/20 text-green-400' :
-          auction.status === 'ENDED' ? 'bg-yellow-500/20 text-yellow-400' :
-          auction.status === 'SETTLED' ? 'bg-gray-500/20 text-gray-400' :
-          'bg-red-500/20 text-red-400'
-        }`}>
-          {auction.status}
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 via-pink-600/0 to-purple-600/0 group-hover:from-purple-600/10 group-hover:via-pink-600/5 group-hover:to-purple-600/10 transition-all duration-500" />
+      
+      {/* Status Badge and Manage Button */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        {onManage && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onManage}
+            className="p-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 hover:text-white rounded-lg border border-gray-700/50 hover:border-gray-600/50 transition-all backdrop-blur-sm"
+            title="Manage Auction"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </motion.button>
+        )}
+        <div className={`px-3 py-1.5 bg-gradient-to-r ${getStatusColor()} rounded-full flex items-center gap-1.5`}>
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+          <span className="text-xs font-semibold text-white">{auction.status}</span>
         </div>
       </div>
 
-      <div className="space-y-3 mb-4">
-        <div className="flex items-center gap-2 text-gray-400">
-          <Clock className="w-4 h-4" />
-          <span className="text-sm">{timeRemaining()}</span>
-        </div>
-        
-        <div className="flex items-center gap-2 text-gray-400">
-          <Users className="w-4 h-4" />
-          <span className="text-sm">{auction.bidCount} bids</span>
+      <div className="relative z-10 p-6">
+        {/* Header */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-gray-800/50 rounded-lg">
+              {getTypeIcon()}
+            </div>
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+              {auction.type} Auction
+            </span>
+          </div>
+          <h3 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
+            {auction.title || `Auction #${auction.auctionId.slice(0, 8)}`}
+          </h3>
+          {auction.description && (
+            <p className="text-sm text-gray-400 line-clamp-2">{auction.description}</p>
+          )}
         </div>
 
-        {auction.type === 'DUTCH' && (
-          <div className="flex items-center gap-2 text-gray-400">
-            <TrendingDown className="w-4 h-4" />
-            <span className="text-sm">Current: ${getCurrentPrice().toLocaleString()}</span>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-gray-800/30 rounded-xl p-3 border border-gray-700/30">
+            <div className="flex items-center gap-2 text-gray-400 mb-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span className="text-xs">Time Left</span>
+            </div>
+            <p className="text-sm font-semibold text-white">
+              {isActive ? timeRemaining : isEnded ? 'Ended' : 'Not Started'}
+            </p>
+          </div>
+
+          <div className="bg-gray-800/30 rounded-xl p-3 border border-gray-700/30">
+            <div className="flex items-center gap-2 text-gray-400 mb-1">
+              <Users className="w-3.5 h-3.5" />
+              <span className="text-xs">Bids</span>
+            </div>
+            <p className="text-sm font-semibold text-white">{auction.bidCount || 0}</p>
+          </div>
+
+          <div className="bg-gray-800/30 rounded-xl p-3 border border-gray-700/30">
+            <div className="flex items-center gap-2 text-gray-400 mb-1">
+              <DollarSign className="w-3.5 h-3.5" />
+              <span className="text-xs">Min Bid</span>
+            </div>
+            <p className="text-sm font-semibold text-white">{auction.minimumBid ? (parseFloat(auction.minimumBid) / 1e9).toFixed(4) : '0'} SOL</p>
+          </div>
+
+          {auction.type === 'DUTCH' && auction.currentPrice && (
+            <div className="bg-gray-800/30 rounded-xl p-3 border border-gray-700/30">
+              <div className="flex items-center gap-2 text-gray-400 mb-1">
+                <TrendingDown className="w-3.5 h-3.5" />
+                <span className="text-xs">Current</span>
+              </div>
+              <p className="text-sm font-semibold text-white">{auction.currentPrice ? (parseFloat(auction.currentPrice) / 1e9).toFixed(4) : '0'} SOL</p>
+            </div>
+          )}
+        </div>
+
+        {/* Winner Info */}
+        {auction.winner && (
+          <div className="mb-4 p-3 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-xl border border-purple-500/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-purple-300 mb-1">Winner</p>
+                <p className="text-sm font-mono text-white">
+                  {auction.winner.slice(0, 6)}...{auction.winner.slice(-4)}
+                </p>
+              </div>
+              {auction.winningAmount && (
+                <div className="text-right">
+                  <p className="text-xs text-purple-300 mb-1">Amount</p>
+                  <p className="text-sm font-bold text-white">{auction.winningAmount ? (parseFloat(auction.winningAmount) / 1e9).toFixed(4) : '0'} SOL</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {auction.type === 'SEALED' && (
-          <div className="flex items-center gap-2 text-gray-400">
-            <Lock className="w-4 h-4" />
-            <span className="text-sm">Min bid: ${auction.minimumBid.toLocaleString()}</span>
-          </div>
+        {/* Action Section */}
+        {isActive && !showBidInput && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowBidInput(true)}
+            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center justify-center gap-2 group"
+          >
+            <Shield className="w-4 h-4" />
+            Place Encrypted Bid
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </motion.button>
         )}
-      </div>
 
-      {auction.status === 'ACTIVE' && !isEnded && (
-        <>
-          {!showBidInput ? (
-            <button
-              onClick={() => setShowBidInput(true)}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            >
-              Place Bid
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <div className="space-y-3">
+        {isActive && showBidInput && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-3"
+          >
+            <div className="relative">
               <input
                 type="number"
                 value={bidAmount}
                 onChange={(e) => setBidAmount(e.target.value)}
                 placeholder="Enter bid amount"
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:bg-gray-800/70 focus:outline-none transition-all pr-16"
+                step="0.01"
+                min={auction.minimumBid || '0'}
+                disabled={isSubmitting}
               />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleBidSubmit}
-                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  Submit Bid
-                </button>
-                <button
-                  onClick={() => setShowBidInput(false)}
-                  className="px-4 py-2 bg-gray-800 text-gray-400 rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">SOL</span>
             </div>
-          )}
-        </>
-      )}
+            <div className="flex gap-2">
+              <button
+                onClick={handleBid}
+                disabled={isSubmitting}
+                className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="w-4 h-4" />
+                    Submit Bid
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowBidInput(false)}
+                disabled={isSubmitting}
+                className="px-4 py-3 bg-gray-800/50 text-gray-400 rounded-xl hover:bg-gray-800/70 border border-gray-700/50 transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        )}
 
-      {auction.status === 'ENDED' && !auction.winner && (
-        <button
-          onClick={() => onSettle(auction.id)}
-          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity"
-        >
-          Settle Auction
-        </button>
-      )}
+        {canSettle && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSettle}
+            disabled={isSubmitting}
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Settling...
+              </>
+            ) : (
+              <>
+                <Award className="w-4 h-4" />
+                Settle Auction
+              </>
+            )}
+          </motion.button>
+        )}
 
-      {auction.winner && (
-        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-          <p className="text-green-400 text-sm font-semibold">Winner</p>
-          <p className="text-white text-xs truncate">{auction.winner}</p>
-          <p className="text-gray-400 text-sm mt-1">
-            Amount: ${auction.winningAmount?.toLocaleString()}
-          </p>
-        </div>
-      )}
+        {auction.status === 'SETTLED' && (
+          <div className="py-3 px-4 bg-gray-800/30 rounded-xl border border-gray-700/30 text-center">
+            <p className="text-sm text-gray-400">Auction Completed</p>
+          </div>
+        )}
+      </div>
+
+      {/* Hover Effect Border */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl" />
     </motion.div>
   );
 };
