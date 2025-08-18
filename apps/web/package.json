@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "clean": "rm -rf .next out"
+    "clean": "rm -rf .next out",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@arcium-hq/client": "^0.2.0",
