@@ -14,14 +14,14 @@ import {
   COMP_DEF_OFFSET_SEALED_BID,
   COMP_DEF_OFFSET_DUTCH_AUCTION
 } from '../utils/constants';
-import { AuctionData, AuctionType, AuctionStatus } from '../types';
+import { AuctionData, AuctionType, AuctionStatus, AuctionAccount, AuctionTypeEnum, AuctionStatusEnum, createTypedProgram, ShadowProtocolProgram } from '../types';
 
 export class AuctionManager {
-  private program: Program;
+  private program: ShadowProtocolProgram;
   private connection: Connection;
 
   constructor(program: Program, connection: Connection) {
-    this.program = program;
+    this.program = createTypedProgram(program);
     this.connection = connection;
   }
 
@@ -70,7 +70,7 @@ export class AuctionManager {
           new BN(params.reserveNonce.toString())
         )
         .accounts({
-          creator: this.program.provider.publicKey,
+          creator: this.program.provider.publicKey!,
           auction: auctionPubkey,
           protocolState: protocolStatePubkey,
           assetMint: new PublicKey(params.assetMint),
@@ -136,7 +136,7 @@ export class AuctionManager {
           new BN(params.reserveNonce.toString())
         )
         .accounts({
-          creator: this.program.provider.publicKey,
+          creator: this.program.provider.publicKey!,
           auction: auctionPubkey,
           protocolState: protocolStatePubkey,
           assetMint: new PublicKey(params.assetMint),
@@ -175,7 +175,7 @@ export class AuctionManager {
           new BN(COMP_DEF_OFFSET_SEALED_BID)
         )
         .accounts({
-          payer: this.program.provider.publicKey,
+          payer: this.program.provider.publicKey!,
           auction: auctionPubkey,
           systemProgram: SystemProgram.programId,
         })
@@ -204,7 +204,7 @@ export class AuctionManager {
           new BN(COMP_DEF_OFFSET_SEALED_BID)
         )
         .accounts({
-          payer: this.program.provider.publicKey,
+          payer: this.program.provider.publicKey!,
           systemProgram: SystemProgram.programId,
         })
         .rpc();
@@ -321,7 +321,7 @@ export class AuctionManager {
     }
   }
 
-  private mapAuctionAccount(account: any): AuctionData {
+  private mapAuctionAccount(account: AuctionAccount): AuctionData {
     return {
       auctionId: account.auctionId.toNumber(),
       creator: account.creator,
@@ -343,17 +343,17 @@ export class AuctionManager {
     };
   }
 
-  private mapAuctionType(type: any): AuctionType {
-    if (type.sealedBid) return AuctionType.SealedBid;
-    if (type.dutch) return AuctionType.Dutch;
+  private mapAuctionType(type: AuctionTypeEnum): AuctionType {
+    if ('sealedBid' in type) return AuctionType.SealedBid;
+    if ('dutch' in type) return AuctionType.Dutch;
     return AuctionType.Batch;
   }
 
-  private mapAuctionStatus(status: any): AuctionStatus {
-    if (status.created) return AuctionStatus.Created;
-    if (status.active) return AuctionStatus.Active;
-    if (status.ended) return AuctionStatus.Ended;
-    if (status.settled) return AuctionStatus.Settled;
+  private mapAuctionStatus(status: AuctionStatusEnum): AuctionStatus {
+    if ('created' in status) return AuctionStatus.Created;
+    if ('active' in status) return AuctionStatus.Active;
+    if ('ended' in status) return AuctionStatus.Ended;
+    if ('settled' in status) return AuctionStatus.Settled;
     return AuctionStatus.Cancelled;
   }
 

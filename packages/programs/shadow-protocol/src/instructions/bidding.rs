@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount, Mint};
+use anchor_spl::token::{Token, TokenAccount, Mint, Transfer, transfer};
 // TODO: Re-enable after fixing Arcium imports
 // use arcium_anchor::{queue_computation};
 // use arcium_client::idl::arcium::{
@@ -9,20 +9,63 @@ use anchor_spl::token::{Token, TokenAccount, Mint};
 use crate::state::*;
 use crate::error::ShadowProtocolError;
 
+/// Calculate current Dutch auction price based on time progression
+fn calculate_dutch_auction_price(auction: &AuctionAccount) -> Result<u64> {
+    let clock = Clock::get()?;
+    let current_time = clock.unix_timestamp;
+    let elapsed_time = current_time.saturating_sub(auction.start_time);
+    
+    // Ensure elapsed time is non-negative
+    let elapsed_seconds = elapsed_time.max(0) as u64;
+    
+    // Calculate price decrease based on time (price_decrease_rate is per second)
+    let price_decrease = elapsed_seconds
+        .checked_mul(auction.price_decrease_rate)
+        .ok_or(ShadowProtocolError::FeeCalculationOverflow)?;
+    
+    // Calculate current price with minimum floor enforcement
+    let current_price = auction.current_price
+        .saturating_sub(price_decrease)
+        .max(auction.minimum_price_floor);
+    
+    Ok(current_price)
+}
+
 pub fn submit_encrypted_bid(
     ctx: Context<SubmitBid>,
     auction_id: u64,
     bid_amount_encrypted: [u8; 32],
     public_key: [u8; 32],
     nonce: u128,
+    collateral_amount: u64,
     computation_offset: u64,
 ) -> Result<()> {
     let auction = &mut ctx.accounts.auction;
+    let protocol = &ctx.accounts.protocol_state;
     let clock = Clock::get()?;
+    
+    require!(!protocol.paused, ShadowProtocolError::ProtocolPaused);
     
     require!(
         auction.status == AuctionStatus::Active,
         ShadowProtocolError::InvalidAuctionStatus
+    );
+    
+    require!(
+        collateral_amount >= auction.minimum_bid,
+        ShadowProtocolError::InsufficientCollateral
+    );
+    
+    // Validate collateral amount is reasonable (prevent overflow attacks)
+    require!(
+        collateral_amount <= u64::MAX / 2,
+        ShadowProtocolError::InvalidAssetAmount
+    );
+    
+    // Validate bidder has sufficient collateral
+    require!(
+        ctx.accounts.bidder_collateral_account.amount >= collateral_amount,
+        ShadowProtocolError::InsufficientFunds
     );
     
     require!(
@@ -42,8 +85,23 @@ pub fn submit_encrypted_bid(
     bid.encryption_public_key = public_key;
     bid.nonce = nonce;
     bid.timestamp = clock.unix_timestamp;
+    bid.collateral_amount = collateral_amount;
+    bid.collateral_account = ctx.accounts.bidder_collateral_account.key();
     bid.is_winner = false;
     bid.bump = ctx.bumps.bid;
+    
+    // Transfer collateral to bid escrow
+    transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.bidder_collateral_account.to_account_info(),
+                to: ctx.accounts.bid_escrow.to_account_info(),
+                authority: ctx.accounts.bidder.to_account_info(),
+            },
+        ),
+        collateral_amount,
+    )?;
     
     auction.bid_count += 1;
     
@@ -83,13 +141,34 @@ pub fn submit_dutch_bid(
     ctx: Context<SubmitDutchBid>,
     auction_id: u64,
     bid_amount: u64,
+    collateral_amount: u64,
 ) -> Result<()> {
     let auction = &mut ctx.accounts.auction;
+    let protocol = &ctx.accounts.protocol_state;
     let clock = Clock::get()?;
+    
+    require!(!protocol.paused, ShadowProtocolError::ProtocolPaused);
     
     require!(
         auction.auction_type == AuctionType::Dutch,
         ShadowProtocolError::InvalidAuctionType
+    );
+    
+    require!(
+        collateral_amount >= bid_amount,
+        ShadowProtocolError::InsufficientCollateral
+    );
+    
+    // Validate bid amount is reasonable (prevent overflow attacks)
+    require!(
+        bid_amount <= u64::MAX / 2,
+        ShadowProtocolError::InvalidAssetAmount
+    );
+    
+    // Validate bidder has sufficient collateral
+    require!(
+        ctx.accounts.bidder_collateral_account.amount >= collateral_amount,
+        ShadowProtocolError::InsufficientFunds
     );
     
     require!(
@@ -102,15 +181,31 @@ pub fn submit_dutch_bid(
         ShadowProtocolError::AuctionEnded
     );
     
-    // Calculate current price
-    let elapsed = (clock.unix_timestamp - auction.start_time) as u64;
-    let price_decrease = elapsed.saturating_mul(auction.price_decrease_rate);
-    let current_price = auction.current_price.saturating_sub(price_decrease);
+    // Calculate current price based on slot progression (more reliable than timestamps)
+    let current_price = calculate_dutch_auction_price(auction)?;
     
     require!(
         bid_amount >= current_price,
         ShadowProtocolError::DutchPriceNotMet
     );
+    
+    require!(
+        current_price >= auction.minimum_price_floor,
+        ShadowProtocolError::PriceBelowMinimumFloor
+    );
+    
+    // Transfer collateral from bidder
+    transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.bidder_collateral_account.to_account_info(),
+                to: ctx.accounts.protocol_payment_account.to_account_info(),
+                authority: ctx.accounts.bidder.to_account_info(),
+            },
+        ),
+        collateral_amount,
+    )?;
     
     // Dutch auction ends immediately when bid meets price
     auction.status = AuctionStatus::Ended;
@@ -178,10 +273,33 @@ pub struct SubmitBid<'info> {
     )]
     pub protocol_state: Account<'info, ProtocolState>,
     
+    /// Bidder's collateral token account
+    #[account(
+        mut,
+        associated_token::mint = collateral_mint,
+        associated_token::authority = bidder
+    )]
+    pub bidder_collateral_account: Account<'info, TokenAccount>,
+    
+    /// Bid escrow account to hold collateral
+    #[account(
+        init,
+        payer = bidder,
+        token::mint = collateral_mint,
+        token::authority = bid,
+        seeds = [b"bid_escrow", auction_id.to_le_bytes().as_ref(), bidder.key().as_ref()],
+        bump
+    )]
+    pub bid_escrow: Account<'info, TokenAccount>,
+    
+    /// Collateral token mint
+    pub collateral_mint: Account<'info, Mint>,
+    
     // TODO: Re-enable after fixing Arcium imports
     // pub computation_definition: Account<'info, ComputationDefinitionAccount>,
     // pub mxe: Account<'info, PersistentMXEAccount>,
     
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
@@ -205,35 +323,55 @@ pub struct SubmitDutchBid<'info> {
     )]
     pub protocol_state: Account<'info, ProtocolState>,
     
+    /// Bidder's collateral token account
+    #[account(
+        mut,
+        associated_token::mint = collateral_mint,
+        associated_token::authority = bidder
+    )]
+    pub bidder_collateral_account: Account<'info, TokenAccount>,
+    
+    /// Protocol payment account
+    #[account(
+        mut,
+        address = protocol_state.fee_recipient
+    )]
+    pub protocol_payment_account: Account<'info, TokenAccount>,
+    
+    /// Collateral token mint
+    pub collateral_mint: Account<'info, Mint>,
+    
     // TODO: Re-enable after fixing Arcium imports
     // pub computation_definition: Account<'info, ComputationDefinitionAccount>,
     // pub mxe: Account<'info, PersistentMXEAccount>,
     
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> SubmitBid<'info> {
-    pub fn queue_computation_ctx(&self) -> CpiContext<'_, '_, '_, 'info, arcium_anchor::QueueComputation<'info>> {
-        let cpi_program = self.computation_definition.to_account_info();
-        let cpi_accounts = arcium_anchor::QueueComputation {
-            computation_definition: self.computation_definition.to_account_info(),
-            mxe: self.mxe.to_account_info(),
-            payer: self.bidder.to_account_info(),
-            system_program: self.system_program.to_account_info(),
-        };
-        CpiContext::new(cpi_program, cpi_accounts)
-    }
-}
+// TODO: Re-enable after fixing Arcium imports
+// impl<'info> SubmitBid<'info> {
+//     pub fn queue_computation_ctx(&self) -> CpiContext<'_, '_, '_, 'info, arcium_anchor::QueueComputation<'info>> {
+//         let cpi_program = self.computation_definition.to_account_info();
+//         let cpi_accounts = arcium_anchor::QueueComputation {
+//             computation_definition: self.computation_definition.to_account_info(),
+//             mxe: self.mxe.to_account_info(),
+//             payer: self.bidder.to_account_info(),
+//             system_program: self.system_program.to_account_info(),
+//         };
+//         CpiContext::new(cpi_program, cpi_accounts)
+//     }
+// }
 
-impl<'info> SubmitDutchBid<'info> {
-    pub fn queue_computation_ctx(&self) -> CpiContext<'_, '_, '_, 'info, arcium_anchor::QueueComputation<'info>> {
-        let cpi_program = self.computation_definition.to_account_info();
-        let cpi_accounts = arcium_anchor::QueueComputation {
-            computation_definition: self.computation_definition.to_account_info(),
-            mxe: self.mxe.to_account_info(),
-            payer: self.bidder.to_account_info(),
-            system_program: self.system_program.to_account_info(),
-        };
-        CpiContext::new(cpi_program, cpi_accounts)
-    }
-}
+// impl<'info> SubmitDutchBid<'info> {
+//     pub fn queue_computation_ctx(&self) -> CpiContext<'_, '_, '_, 'info, arcium_anchor::QueueComputation<'info>> {
+//         let cpi_program = self.computation_definition.to_account_info();
+//         let cpi_accounts = arcium_anchor::QueueComputation {
+//             computation_definition: self.computation_definition.to_account_info(),
+//             mxe: self.mxe.to_account_info(),
+//             payer: self.bidder.to_account_info(),
+//             system_program: self.system_program.to_account_info(),
+//         };
+//         CpiContext::new(cpi_program, cpi_accounts)
+//     }
+// }

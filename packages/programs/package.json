@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-      "build": "anchor build",
-      "test": "anchor test",
-      "deploy": "anchor deploy",
+      "build": "cd shadow-protocol && cargo build-sbf --sbf-out-dir=target/deploy",
+      "test": "cd shadow-protocol && cargo test",
+      "deploy": "cd shadow-protocol && solana program deploy target/deploy/shadow_protocol.so",
       "deploy:devnet": "anchor deploy --provider.cluster devnet",
       "deploy:mainnet": "anchor deploy --provider.cluster mainnet-beta",
       "clean": "anchor clean",

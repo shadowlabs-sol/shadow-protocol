@@ -17,13 +17,13 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = { version = "=0.29.0", features = ["init-if-needed"] }
-anchor-spl = { version = "=0.29.0" }
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+anchor-spl = { version = "0.31.1" }
 # TODO: Fix version conflicts with Arcium packages
 # arcium-anchor = { version = "0.1.45" }
 # arcium-client = { version = "0.1.45" }
 # arcium-macros = { version = "0.1.45" }
 
 [dev-dependencies]
-solana-sdk = "~1.16"
-solana-program-test = "~1.16"
+solana-sdk = "2.3.1"
+solana-program-test = "2.3.1"

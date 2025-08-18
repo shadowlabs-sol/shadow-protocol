@@ -13,8 +13,8 @@ export class ShadowClient {
     public readonly program: Program,
     public readonly programId: PublicKey
   ) {
-    this.auction = new AuctionManager(provider, program);
-    this.bid = new BidManager(provider, program);
+    this.auction = new AuctionManager(program, connection);
+    this.bid = new BidManager(program, connection);
   }
   
   static async initialize(
@@ -25,7 +25,6 @@ export class ShadowClient {
     // Load program IDL and create program instance
     const program = new Program(
       require('../../../programs/shadow-protocol/target/idl/shadow_protocol.json'),
-      programId,
       provider
     );
     

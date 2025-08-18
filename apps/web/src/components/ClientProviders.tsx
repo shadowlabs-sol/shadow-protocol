@@ -7,6 +7,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { clusterApiUrl } from '@solana/web3.js';
 import { ShadowProtocolProvider } from '@/context/ShadowProtocolContext';
+import { AuthProvider } from '@/context/AuthContext';
 require('@solana/wallet-adapter-react-ui/styles.css');
 
 export function ClientProviders({ children }: { children: ReactNode }) {
@@ -25,9 +26,11 @@ export function ClientProviders({ children }: { children: ReactNode }) {
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect={true}>
         <WalletModalProvider>
-          <ShadowProtocolProvider>
-            {children}
-          </ShadowProtocolProvider>
+          <AuthProvider>
+            <ShadowProtocolProvider>
+              {children}
+            </ShadowProtocolProvider>
+          </AuthProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

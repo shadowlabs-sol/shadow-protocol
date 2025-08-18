@@ -16,6 +16,8 @@ pub struct BatchResult {
     pub results: Vec<AuctionResult>,
 }
 
+// TODO: Re-enable after fixing Arcium callback integration
+/*
 pub fn handle_sealed_bid_settlement(
     ctx: Context<SealedBidSettlementCallback>,
     output: ComputationOutputs,
@@ -74,9 +76,10 @@ pub fn handle_dutch_auction_result(
                 auction.settled_at = Some(Clock::get()?.unix_timestamp);
                 
                 // Execute asset transfer
+                let auction_id_bytes = auction.auction_id.to_le_bytes();
                 let auction_seeds = &[
                     AUCTION_SEED,
-                    auction.auction_id.to_le_bytes().as_ref(),
+                    auction_id_bytes.as_ref(),
                     &[auction.bump],
                 ];
                 let signer_seeds = &[&auction_seeds[..]];
@@ -154,7 +157,10 @@ pub fn handle_batch_settlement(
     
     Ok(())
 }
+*/
 
+// TODO: Re-enable context definitions after fixing Arcium callback integration
+/*
 // Context definitions for callbacks
 
 #[derive(Accounts)]
@@ -162,12 +168,7 @@ pub struct SealedBidSettlementCallback<'info> {
     #[account(mut)]
     pub auction: Account<'info, AuctionAccount>,
     
-    #[account(
-        mut,
-        seeds = [BID_SEED, auction.auction_id.to_le_bytes().as_ref(), auction.winner.unwrap().as_ref()],
-        bump,
-        required = false
-    )]
+    #[account(mut)]
     pub winner_bid: Option<Account<'info, BidAccount>>,
     
     #[account(
@@ -189,11 +190,7 @@ pub struct DutchAuctionCallback<'info> {
     )]
     pub asset_vault: Account<'info, TokenAccount>,
     
-    #[account(
-        mut,
-        associated_token::mint = auction.asset_mint,
-        associated_token::authority = auction.winner.unwrap()
-    )]
+    #[account(mut)]
     pub winner_asset_account: Account<'info, TokenAccount>,
     
     #[account(
@@ -239,3 +236,4 @@ pub struct InitBatchSettlementCompDef<'info> {
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
+*/

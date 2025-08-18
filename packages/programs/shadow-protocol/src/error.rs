@@ -76,4 +76,31 @@ pub enum ShadowProtocolError {
     
     #[msg("Invalid winner determination")]
     InvalidWinnerDetermination,
+    
+    #[msg("MPC verification failed")]
+    MpcVerificationFailed,
+    
+    #[msg("Settlement not authorized")]
+    SettlementNotAuthorized,
+    
+    #[msg("Authority transfer already pending")]
+    AuthorityTransferPending,
+    
+    #[msg("Authority transfer timelock not elapsed")]
+    AuthorityTransferTimelockNotElapsed,
+    
+    #[msg("No pending authority transfer")]
+    NoPendingAuthorityTransfer,
+    
+    #[msg("Auction ID already exists")]
+    AuctionIdAlreadyExists,
+    
+    #[msg("Insufficient collateral for bid")]
+    InsufficientCollateral,
+    
+    #[msg("Invalid asset amount")]
+    InvalidAssetAmount,
+    
+    #[msg("Price below minimum floor")]
+    PriceBelowMinimumFloor,
 }

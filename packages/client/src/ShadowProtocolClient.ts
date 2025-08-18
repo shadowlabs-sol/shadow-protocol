@@ -50,7 +50,6 @@ import {
       // Initialize program (IDL would be loaded here in production)
       this.program = new Program(
         {} as any, // IDL would go here
-        new PublicKey(config.programId || SHADOW_PROTOCOL_PROGRAM_ID),
         this.provider
       );
   
@@ -58,8 +57,9 @@ import {
       this.auctionManager = new AuctionManager(this.program, this.connection);
       this.bidManager = new BidManager(this.program, this.connection);
       this.encryptionManager = new EncryptionManager(
-        config.arciumClusterPubkey,
-        config.clusterOffset || DEFAULT_CLUSTER_OFFSET
+        config.arciumClusterPubkey || '',
+        config.clusterOffset || DEFAULT_CLUSTER_OFFSET,
+        config.mxePublicKey
       );
     }
   
@@ -77,7 +77,7 @@ import {
     }> {
       // Encrypt reserve price
       const { encryptedData, nonce, publicKey } = await this.encryptionManager.encryptValue(
-        BigInt(params.reservePrice)
+        BigInt(params.reservePrice || 0)
       );
   
       const result = await this.auctionManager.createSealedAuction({
@@ -103,12 +103,12 @@ import {
     }> {
       // Encrypt reserve price
       const { encryptedData, nonce, publicKey } = await this.encryptionManager.encryptValue(
-        BigInt(params.reservePrice)
+        BigInt(params.reservePrice || 0)
       );
   
       const result = await this.auctionManager.createDutchAuction({
         ...params,
-        reservePrice: params.reservePrice,
+        reservePrice: params.reservePrice || 0,
         reserveNonce: nonce,
         encryptionPublicKey: Array.from(publicKey),
       });
@@ -126,11 +126,11 @@ import {
     }> {
       // Encrypt bid amount
       const { encryptedData, nonce, publicKey } = await this.encryptionManager.encryptValue(
-        BigInt(params.bidAmount)
+        BigInt(params.amount)
       );
   
       const result = await this.bidManager.submitEncryptedBid({
-        auctionId: params.auctionId,
+        auctionId: parseInt(params.auctionId),
         bidAmountEncrypted: Array.from(encryptedData),
         nonce,
         publicKey: Array.from(publicKey),
@@ -147,8 +147,8 @@ import {
       accepted: boolean;
     }> {
       const result = await this.bidManager.submitDutchBid({
-        auctionId: params.auctionId,
-        bidAmount: params.bidAmount,
+        auctionId: parseInt(params.auctionId),
+        bidAmount: params.amount,
       });
   
       return result;
@@ -236,7 +236,7 @@ import {
       }
   
       const elapsed = Date.now() / 1000 - auction.startTime;
-      const currentPrice = auction.startingPrice - (auction.priceDecreaseRate * elapsed);
+      const currentPrice = (auction.startingPrice || auction.currentPrice) - (auction.priceDecreaseRate * elapsed);
       
       return Math.max(currentPrice, 0);
     }
@@ -346,19 +346,19 @@ import {
     // Getters
     // ========================================
   
-    get connection(): Connection {
+    getConnection(): Connection {
       return this.connection;
     }
   
-    get provider(): AnchorProvider {
+    getProvider(): AnchorProvider {
       return this.provider;
     }
   
-    get program(): Program {
+    getProgram(): Program {
       return this.program;
     }
   
-    get config(): ShadowProtocolConfig {
+    getConfig(): ShadowProtocolConfig {
       return this.config;
     }
   }

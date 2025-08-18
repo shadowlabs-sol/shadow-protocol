@@ -2,17 +2,17 @@ import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 
 export enum AuctionType {
-  SEALED = 'SEALED',
-  DUTCH = 'DUTCH',
-  BATCH = 'BATCH'
+  SealedBid = 'SEALED_BID',
+  Dutch = 'DUTCH',
+  Batch = 'BATCH'
 }
 
 export enum AuctionStatus {
-  CREATED = 'CREATED',
-  ACTIVE = 'ACTIVE',
-  ENDED = 'ENDED',
-  SETTLED = 'SETTLED',
-  CANCELLED = 'CANCELLED'
+  Created = 'CREATED',
+  Active = 'ACTIVE',
+  Ended = 'ENDED',
+  Settled = 'SETTLED',
+  Cancelled = 'CANCELLED'
 }
 
 export interface Auction {

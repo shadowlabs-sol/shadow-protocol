@@ -11,14 +11,14 @@ import {
   AUCTION_SEED,
   COMP_DEF_OFFSET_SEALED_BID
 } from '../utils/constants';
-import { BidData } from '../types';
+import { BidData, BidAccount, createTypedProgram, ShadowProtocolProgram } from '../types';
 
 export class BidManager {
-  private program: Program;
+  private program: ShadowProtocolProgram;
   private connection: Connection;
 
   constructor(program: Program, connection: Connection) {
-    this.program = program;
+    this.program = createTypedProgram(program);
     this.connection = connection;
   }
 
@@ -47,7 +47,7 @@ export class BidManager {
       [
         Buffer.from(BID_SEED),
         new BN(params.auctionId).toArrayLike(Buffer, 'le', 8),
-        this.program.provider.publicKey.toBuffer()
+        this.program.provider.publicKey!!.toBuffer()
       ],
       this.program.programId
     );
@@ -65,7 +65,7 @@ export class BidManager {
           computationOffset
         )
         .accounts({
-          bidder: this.program.provider.publicKey,
+          bidder: this.program.provider.publicKey!!,
           auction: auctionPubkey,
           bid: bidPubkey,
           systemProgram: SystemProgram.programId,
@@ -104,7 +104,7 @@ export class BidManager {
           new BN(params.bidAmount)
         )
         .accounts({
-          bidder: this.program.provider.publicKey,
+          bidder: this.program.provider.publicKey!!,
           auction: auctionPubkey,
           systemProgram: SystemProgram.programId,
         })
@@ -112,7 +112,7 @@ export class BidManager {
 
       // Check if bid was accepted (Dutch auction ends immediately if bid meets current price)
       const auctionAccount = await this.program.account.auctionAccount.fetch(auctionPubkey);
-      const accepted = auctionAccount.winner?.equals(this.program.provider.publicKey) || false;
+      const accepted = auctionAccount.winner?.equals(this.program.provider.publicKey!) || false;
 
       return {
         signature,
@@ -138,7 +138,7 @@ export class BidManager {
         }
       ]);
 
-      return bids.map(({ account, publicKey }) => ({
+      return bids.map(({ account, publicKey }: { account: BidAccount; publicKey: import('@solana/web3.js').PublicKey }) => ({
         auctionId: account.auctionId.toNumber(),
         bidder: account.bidder,
         amountEncrypted: new Uint8Array(account.amountEncrypted),
@@ -167,7 +167,7 @@ export class BidManager {
         }
       ]);
 
-      return bids.map(({ account }) => ({
+      return bids.map(({ account }: { account: BidAccount }) => ({
         auctionId: account.auctionId.toNumber(),
         bidder: account.bidder,
         amountEncrypted: new Uint8Array(account.amountEncrypted),
@@ -195,7 +195,7 @@ export class BidManager {
       [
         Buffer.from(BID_SEED),
         new BN(auctionId).toArrayLike(Buffer, 'le', 8),
-        this.program.provider.publicKey.toBuffer()
+        this.program.provider.publicKey!!.toBuffer()
       ],
       this.program.programId
     );
@@ -204,7 +204,7 @@ export class BidManager {
       const signature = await this.program.methods
         .cancelBid(new BN(auctionId))
         .accounts({
-          bidder: this.program.provider.publicKey,
+          bidder: this.program.provider.publicKey!!,
           auction: auctionPubkey,
           bid: bidPubkey,
           systemProgram: SystemProgram.programId,
@@ -234,7 +234,7 @@ export class BidManager {
       }
 
       // Verify bidder matches
-      if (!bidAccount.bidder.equals(this.program.provider.publicKey)) {
+      if (!bidAccount.bidder.equals(this.program.provider.publicKey!)) {
         return false;
       }
 

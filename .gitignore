@@ -86,3 +86,6 @@ deployer-keypair.json
 # Database
 *.db
 *.db-journal
+
+# Scripts (local development)
+scripts/

@@ -4,16 +4,19 @@ import { randomBytes } from 'crypto';
 export class EncryptionManager {
   private arciumClusterPubkey: string;
   private clusterOffset: number;
+  private mxePublicKey: Uint8Array;
 
-  constructor(arciumClusterPubkey: string, clusterOffset: number) {
+  constructor(arciumClusterPubkey: string, clusterOffset: number, mxePublicKey?: Uint8Array) {
     this.arciumClusterPubkey = arciumClusterPubkey;
     this.clusterOffset = clusterOffset;
+    // Default MXE public key for testing - in production this should come from configuration
+    this.mxePublicKey = mxePublicKey || new Uint8Array(32).fill(1);
   }
 
   /**
    * Encrypt a value for shared access between client and MXE
    */
-  async encryptValue(value: bigint | number, mxePublicKey: Uint8Array): Promise<{
+  async encryptValue(value: bigint | number, mxePublicKey?: Uint8Array): Promise<{
     encryptedData: Uint8Array;
     nonce: bigint;
     publicKey: Uint8Array;
@@ -24,7 +27,8 @@ export class EncryptionManager {
     const publicKey = x25519.getPublicKey(privateKey);
     
     // Generate shared secret with MXE
-    const sharedSecret = x25519.getSharedSecret(privateKey, mxePublicKey);
+    const publicKeyToUse = mxePublicKey || this.mxePublicKey;
+    const sharedSecret = x25519.getSharedSecret(privateKey, publicKeyToUse);
     
     // Initialize Rescue cipher with shared secret
     const cipher = new RescueCipher(sharedSecret);
@@ -38,7 +42,7 @@ export class EncryptionManager {
     const ciphertext = cipher.encrypt(plaintext, nonceBytes);
     
     return {
-      encryptedData: new Uint8Array(ciphertext[0]),
+      encryptedData: new Uint8Array(Array.isArray(ciphertext[0]) ? ciphertext[0] : [ciphertext[0]]),
       nonce,
       publicKey,
       sharedSecret
@@ -48,7 +52,7 @@ export class EncryptionManager {
   /**
    * Encrypt multiple values (for struct inputs)
    */
-  async encryptStruct(values: bigint[], mxePublicKey: Uint8Array): Promise<{
+  async encryptStruct(values: bigint[], mxePublicKey?: Uint8Array): Promise<{
     encryptedData: Uint8Array[];
     nonce: bigint;
     publicKey: Uint8Array;
@@ -56,7 +60,8 @@ export class EncryptionManager {
   }> {
     const privateKey = x25519.utils.randomPrivateKey();
     const publicKey = x25519.getPublicKey(privateKey);
-    const sharedSecret = x25519.getSharedSecret(privateKey, mxePublicKey);
+    const publicKeyToUse = mxePublicKey || this.mxePublicKey;
+    const sharedSecret = x25519.getSharedSecret(privateKey, publicKeyToUse);
     const cipher = new RescueCipher(sharedSecret);
     
     const nonceBytes = randomBytes(16);
@@ -65,7 +70,7 @@ export class EncryptionManager {
     const ciphertexts = cipher.encrypt(values, nonceBytes);
     
     return {
-      encryptedData: ciphertexts.map(ct => new Uint8Array(ct)),
+      encryptedData: ciphertexts.map(ct => new Uint8Array(Array.isArray(ct) ? ct : [ct])),
       nonce,
       publicKey,
       sharedSecret
@@ -86,7 +91,9 @@ export class EncryptionManager {
       ? encryptedData 
       : [encryptedData];
     
-    return cipher.decrypt(ciphertexts, nonce);
+    // Convert Uint8Array to number[] if needed for the cipher
+    const convertedCiphertexts = ciphertexts.map(ct => Array.from(ct));
+    return cipher.decrypt(convertedCiphertexts as any, nonce);
   }
 
   /**

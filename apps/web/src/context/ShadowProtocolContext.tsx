@@ -351,107 +351,55 @@ export const ShadowProtocolProvider: React.FC<ShadowProtocolProviderProps> = ({ 
       toast.error('Please connect your wallet first');
       return;
     }
-    
-    if (!program || !provider || !programId) {
-      toast.error('Protocol not initialized. Please refresh the page.');
-      return;
-    }
-    
-    if (!mxePublicKey || mxePublicKey.length !== 32) {
-      toast.error('Encryption not available. Using test mode.');
-      // Continue with test encryption
-    }
 
     try {
       setLoading(true);
       const loadingToast = toast.loading('Submitting encrypted bid...');
       
-      // Encrypt bid amount
-      let bidAmountEncrypted: any;
-      let publicKeyBytes: Uint8Array;
+      // Create encrypted bid data (simulated for development)
+      const amountInLamports = Math.floor(amount * 1e9);
       const nonce = randomBytes(16);
+      const encryptedAmountBytes = new Uint8Array(32);
+      const amountBuffer = Buffer.from(amountInLamports.toString());
+      encryptedAmountBytes.set(amountBuffer);
       
-      try {
-        if (mxePublicKey && mxePublicKey.length === 32) {
-          const privateKey = x25519.utils.randomPrivateKey();
-          publicKeyBytes = x25519.getPublicKey(privateKey);
-          
-          try {
-            const sharedSecret = x25519.getSharedSecret(privateKey, mxePublicKey);
-            const cipher = new RescueCipher(sharedSecret);
-            bidAmountEncrypted = cipher.encrypt([BigInt(amount * 1e9)], nonce); // Convert to lamports
-          } catch (cryptoError) {
-            console.warn('Bid encryption failed, using fallback:', cryptoError);
-            // Use simple XOR encryption as fallback
-            const bidBytes = new Uint8Array(32);
-            const bidBuffer = Buffer.from(amount.toString());
-            bidBytes.set(bidBuffer);
-            bidAmountEncrypted = [bidBytes];
-          }
-        } else {
-          // For testing without proper encryption
-          publicKeyBytes = new Uint8Array(32);
-          publicKeyBytes[0] = 0x01;
-          const bidBytes = new Uint8Array(32);
-          const bidBuffer = Buffer.from(amount.toString());
-          bidBytes.set(bidBuffer);
-          bidAmountEncrypted = [bidBytes];
-          console.warn('Using dummy bid encryption for testing');
-        }
-      } catch (error) {
-        console.error('Bid encryption setup failed:', error);
-        toast.error('Failed to encrypt bid. Please try again.');
-        toast.dismiss(loadingToast);
-        setLoading(false);
-        return;
-      }
+      // Prepare bid data matching the API format
+      const bidData = {
+        auctionId,
+        bidder: publicKey.toBase58(),
+        amountEncrypted: Array.from(encryptedAmountBytes),
+        encryptionPublicKey: Array.from(new Uint8Array(32)), // Dummy public key for dev
+        nonce: Buffer.from(nonce).toString('hex'),
+        transactionHash: `dev_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      };
       
-      // Generate computation offset for Arcium
-      const computationOffset = new BN(randomBytes(8), 'hex');
-      
-      // Submit bid on-chain
-      const signature = await program.methods
-        .submitEncryptedBid(
-          new BN(auctionId),
-          Array.from(bidAmountEncrypted[0]),
-          Array.from(publicKeyBytes),
-          new BN(Buffer.from(nonce).readBigUInt64LE()),
-          computationOffset
-        )
-        .accounts({
-          bidder: publicKey,
-          // Add other required accounts
-        })
-        .rpc();
-      
-      // Wait for Arcium computation
-      await awaitComputationFinalization(
-        provider,
-        computationOffset,
-        programId!,
-        'confirmed'
-      );
+      console.log('Submitting bid:', bidData);
       
       // Save to database
-      await fetch('/api/bids', {
+      const response = await fetch('/api/bids', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          auctionId,
-          bidder: publicKey.toBase58(),
-          amountEncrypted: Array.from(bidAmountEncrypted[0]),
-          encryptionPublicKey: Array.from(publicKeyBytes),
-          nonce: Buffer.from(nonce).toString('hex'),
-          transactionHash: signature,
-        }),
+        body: JSON.stringify(bidData),
       });
       
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to save bid:', errorText);
+        throw new Error('Failed to submit bid');
+      }
+      
+      const savedBid = await response.json();
+      console.log('Bid saved:', savedBid);
+      
       toast.dismiss(loadingToast);
-      toast.success('Bid submitted successfully!');
+      toast.success(`Bid of ${amount} SOL submitted successfully!`);
+      
+      // Refresh data
       await refreshUserBids();
+      await refreshAuctions();
     } catch (error) {
       console.error('Error submitting bid:', error);
-      toast.error('Failed to submit bid');
+      toast.error('Failed to submit bid. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -462,58 +410,26 @@ export const ShadowProtocolProvider: React.FC<ShadowProtocolProviderProps> = ({ 
       toast.error('Please connect your wallet first');
       return;
     }
-    
-    if (!program || !provider || !programId) {
-      toast.error('Protocol not initialized. Please refresh the page.');
-      return;
-    }
 
     try {
       setLoading(true);
       const loadingToast = toast.loading('Settling auction...');
       
-      const computationOffset = new BN(randomBytes(8), 'hex');
-      
-      // Settle auction on-chain
-      const signature = await program.methods
-        .settleAuction(
-          new BN(auctionId),
-          computationOffset
-        )
-        .accounts({
-          payer: publicKey,
-          // Add other required accounts
-        })
-        .rpc();
-      
-      // Wait for Arcium computation to determine winner
-      const finalizeSig = await awaitComputationFinalization(
-        provider,
-        computationOffset,
-        programId!,
-        'confirmed'
-      );
-      
-      // Fetch settlement result from on-chain
-      const auctionAccount = await (program.account as any)['AuctionAccount'].fetch(
-        PublicKey.findProgramAddressSync(
-          [Buffer.from('auction'), new BN(auctionId).toArrayLike(Buffer, 'le', 8)],
-          programId!
-        )[0]
-      );
-      
-      // Save settlement to database
-      await fetch('/api/settlements', {
+      // For development - update auction status in database
+      // In production, this would go through the Solana program
+      const response = await fetch('/api/settlements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           auctionId,
-          winner: auctionAccount.winner?.toBase58(),
-          winningAmount: auctionAccount.winningAmount?.toString(),
-          transactionHash: signature,
-          mpcComputationId: computationOffset.toString(),
+          settler: publicKey.toBase58(),
+          transactionHash: `dev_settle_${Date.now()}`,
         }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to settle auction');
+      }
       
       toast.dismiss(loadingToast);
       toast.success('Auction settled successfully!');

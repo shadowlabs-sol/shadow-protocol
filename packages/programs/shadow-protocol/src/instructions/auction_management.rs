@@ -5,15 +5,31 @@ use crate::error::ShadowProtocolError;
 
 pub fn create_sealed_auction(
     ctx: Context<CreateSealedAuction>,
-    auction_id: u64,
     asset_mint: Pubkey,
+    asset_amount: u64,
     duration: u64,
     minimum_bid: u64,
     reserve_price_encrypted: [u8; 32],
     reserve_price_nonce: u128,
 ) -> Result<()> {
-    let protocol = &ctx.accounts.protocol_state;
+    let protocol = &mut ctx.accounts.protocol_state;
     require!(!protocol.paused, ShadowProtocolError::ProtocolPaused);
+    
+    require!(asset_amount > 0, ShadowProtocolError::InvalidAssetAmount);
+    
+    // Validate creator has sufficient assets
+    require!(
+        ctx.accounts.creator_asset_account.amount >= asset_amount,
+        ShadowProtocolError::InsufficientFunds
+    );
+    
+    // Get the auction ID from protocol state
+    let auction_id = protocol.next_auction_id;
+    
+    // Increment next auction ID with overflow check
+    protocol.next_auction_id = protocol.next_auction_id
+        .checked_add(1)
+        .ok_or(ShadowProtocolError::FeeCalculationOverflow)?;
     
     let clock = Clock::get()?;
     let start_time = clock.unix_timestamp;
@@ -29,11 +45,13 @@ pub fn create_sealed_auction(
     auction.creator = ctx.accounts.creator.key();
     auction.asset_mint = asset_mint;
     auction.asset_vault = ctx.accounts.asset_vault.key();
+    auction.asset_amount = asset_amount;
     auction.auction_type = AuctionType::SealedBid;
     auction.status = AuctionStatus::Active;
     auction.start_time = start_time;
     auction.end_time = end_time;
     auction.minimum_bid = minimum_bid;
+    auction.minimum_price_floor = 0;
     auction.reserve_price_encrypted = reserve_price_encrypted;
     auction.reserve_price_nonce = reserve_price_nonce;
     auction.current_price = 0;
@@ -42,22 +60,22 @@ pub fn create_sealed_auction(
     auction.winner = None;
     auction.winning_amount = 0;
     auction.settled_at = None;
+    auction.mpc_verification_hash = None;
+    auction.settlement_authorized = false;
     auction.bump = ctx.bumps.auction;
     
-    // Transfer asset to vault
-    if ctx.accounts.creator_asset_account.amount > 0 {
-        transfer(
-            CpiContext::new(
-                ctx.accounts.token_program.to_account_info(),
-                Transfer {
-                    from: ctx.accounts.creator_asset_account.to_account_info(),
-                    to: ctx.accounts.asset_vault_account.to_account_info(),
-                    authority: ctx.accounts.creator.to_account_info(),
-                },
-            ),
-            ctx.accounts.creator_asset_account.amount,
-        )?;
-    }
+    // Transfer exact asset amount to vault
+    transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.creator_asset_account.to_account_info(),
+                to: ctx.accounts.asset_vault.to_account_info(),
+                authority: ctx.accounts.creator.to_account_info(),
+            },
+        ),
+        asset_amount,
+    )?;
     
     emit!(AuctionCreated {
         auction_id,
@@ -74,21 +92,44 @@ pub fn create_sealed_auction(
 
 pub fn create_dutch_auction(
     ctx: Context<CreateDutchAuction>,
-    auction_id: u64,
     asset_mint: Pubkey,
+    asset_amount: u64,
     starting_price: u64,
     price_decrease_rate: u64,
+    minimum_price_floor: u64,
     duration: u64,
     reserve_price_encrypted: [u8; 32],
     reserve_price_nonce: u128,
 ) -> Result<()> {
-    let protocol = &ctx.accounts.protocol_state;
+    let protocol = &mut ctx.accounts.protocol_state;
     require!(!protocol.paused, ShadowProtocolError::ProtocolPaused);
+    
+    require!(asset_amount > 0, ShadowProtocolError::InvalidAssetAmount);
+    
+    // Validate creator has sufficient assets
+    require!(
+        ctx.accounts.creator_asset_account.amount >= asset_amount,
+        ShadowProtocolError::InsufficientFunds
+    );
     
     require!(
         price_decrease_rate > 0,
         ShadowProtocolError::InvalidPriceDecreaseRate
     );
+    
+    // Validate minimum price floor
+    require!(
+        minimum_price_floor <= starting_price,
+        ShadowProtocolError::PriceBelowMinimumFloor
+    );
+    
+    // Get the auction ID from protocol state
+    let auction_id = protocol.next_auction_id;
+    
+    // Increment next auction ID with overflow check
+    protocol.next_auction_id = protocol.next_auction_id
+        .checked_add(1)
+        .ok_or(ShadowProtocolError::FeeCalculationOverflow)?;
     
     let clock = Clock::get()?;
     let start_time = clock.unix_timestamp;
@@ -104,11 +145,13 @@ pub fn create_dutch_auction(
     auction.creator = ctx.accounts.creator.key();
     auction.asset_mint = asset_mint;
     auction.asset_vault = ctx.accounts.asset_vault.key();
+    auction.asset_amount = asset_amount;
     auction.auction_type = AuctionType::Dutch;
     auction.status = AuctionStatus::Active;
     auction.start_time = start_time;
     auction.end_time = end_time;
     auction.minimum_bid = 0;
+    auction.minimum_price_floor = minimum_price_floor;
     auction.reserve_price_encrypted = reserve_price_encrypted;
     auction.reserve_price_nonce = reserve_price_nonce;
     auction.current_price = starting_price;
@@ -117,22 +160,22 @@ pub fn create_dutch_auction(
     auction.winner = None;
     auction.winning_amount = 0;
     auction.settled_at = None;
+    auction.mpc_verification_hash = None;
+    auction.settlement_authorized = false;
     auction.bump = ctx.bumps.auction;
     
-    // Transfer asset to vault
-    if ctx.accounts.creator_asset_account.amount > 0 {
-        transfer(
-            CpiContext::new(
-                ctx.accounts.token_program.to_account_info(),
-                Transfer {
-                    from: ctx.accounts.creator_asset_account.to_account_info(),
-                    to: ctx.accounts.asset_vault_account.to_account_info(),
-                    authority: ctx.accounts.creator.to_account_info(),
-                },
-            ),
-            ctx.accounts.creator_asset_account.amount,
-        )?;
-    }
+    // Transfer exact asset amount to vault
+    transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.creator_asset_account.to_account_info(),
+                to: ctx.accounts.asset_vault.to_account_info(),
+                authority: ctx.accounts.creator.to_account_info(),
+            },
+        ),
+        asset_amount,
+    )?;
     
     emit!(AuctionCreated {
         auction_id,
@@ -148,7 +191,6 @@ pub fn create_dutch_auction(
 }
 
 #[derive(Accounts)]
-#[instruction(auction_id: u64)]
 pub struct CreateSealedAuction<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -157,12 +199,13 @@ pub struct CreateSealedAuction<'info> {
         init,
         payer = creator,
         space = 8 + AuctionAccount::INIT_SPACE,
-        seeds = [AUCTION_SEED, auction_id.to_le_bytes().as_ref()],
+        seeds = [AUCTION_SEED, protocol_state.next_auction_id.to_le_bytes().as_ref()],
         bump
     )]
     pub auction: Account<'info, AuctionAccount>,
     
     #[account(
+        mut,
         seeds = [PROTOCOL_SEED],
         bump = protocol_state.bump
     )]
@@ -175,17 +218,10 @@ pub struct CreateSealedAuction<'info> {
         payer = creator,
         token::mint = asset_mint,
         token::authority = auction,
-        seeds = [ASSET_VAULT_SEED, auction_id.to_le_bytes().as_ref()],
+        seeds = [ASSET_VAULT_SEED, protocol_state.next_auction_id.to_le_bytes().as_ref()],
         bump
     )]
-    pub asset_vault: Account<'info, Pubkey>,
-    
-    #[account(
-        mut,
-        associated_token::mint = asset_mint,
-        associated_token::authority = auction
-    )]
-    pub asset_vault_account: Account<'info, TokenAccount>,
+    pub asset_vault: Account<'info, TokenAccount>,
     
     #[account(
         mut,
@@ -199,7 +235,6 @@ pub struct CreateSealedAuction<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(auction_id: u64)]
 pub struct CreateDutchAuction<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -208,12 +243,13 @@ pub struct CreateDutchAuction<'info> {
         init,
         payer = creator,
         space = 8 + AuctionAccount::INIT_SPACE,
-        seeds = [AUCTION_SEED, auction_id.to_le_bytes().as_ref()],
+        seeds = [AUCTION_SEED, protocol_state.next_auction_id.to_le_bytes().as_ref()],
         bump
     )]
     pub auction: Account<'info, AuctionAccount>,
     
     #[account(
+        mut,
         seeds = [PROTOCOL_SEED],
         bump = protocol_state.bump
     )]
@@ -226,17 +262,10 @@ pub struct CreateDutchAuction<'info> {
         payer = creator,
         token::mint = asset_mint,
         token::authority = auction,
-        seeds = [ASSET_VAULT_SEED, auction_id.to_le_bytes().as_ref()],
+        seeds = [ASSET_VAULT_SEED, protocol_state.next_auction_id.to_le_bytes().as_ref()],
         bump
     )]
-    pub asset_vault: Account<'info, Pubkey>,
-    
-    #[account(
-        mut,
-        associated_token::mint = asset_mint,
-        associated_token::authority = auction
-    )]
-    pub asset_vault_account: Account<'info, TokenAccount>,
+    pub asset_vault: Account<'info, TokenAccount>,
     
     #[account(
         mut,

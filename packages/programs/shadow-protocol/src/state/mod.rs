@@ -23,10 +23,16 @@ pub struct ProtocolState {
     pub fee_recipient: Pubkey,
     /// Whether the protocol is paused
     pub paused: bool,
+    /// Next auction ID (auto-incrementing)
+    pub next_auction_id: u64,
+    /// Pending authority transfer
+    pub pending_authority: Option<Pubkey>,
+    /// Authority transfer timelock (timestamp)
+    pub authority_transfer_timelock: Option<i64>,
     /// Protocol bump seed
     pub bump: u8,
     /// Reserved space for future upgrades
-    pub reserved: [u8; 128],
+    pub reserved: [u8; 100],
 }
 
 #[account]
@@ -40,6 +46,8 @@ pub struct AuctionAccount {
     pub asset_mint: Pubkey,
     /// Asset vault holding the auctioned item
     pub asset_vault: Pubkey,
+    /// Asset amount being auctioned
+    pub asset_amount: u64,
     /// Auction type
     pub auction_type: AuctionType,
     /// Auction status
@@ -50,13 +58,15 @@ pub struct AuctionAccount {
     pub end_time: i64,
     /// Minimum bid amount
     pub minimum_bid: u64,
+    /// Minimum price floor (for Dutch auctions)
+    pub minimum_price_floor: u64,
     /// Encrypted reserve price (for privacy)
     pub reserve_price_encrypted: [u8; 32],
     /// Nonce for reserve price encryption
     pub reserve_price_nonce: u128,
     /// Current highest bid (for Dutch auctions)
     pub current_price: u64,
-    /// Price decrease rate (for Dutch auctions, per second)
+    /// Price decrease rate (for Dutch auctions, per slot)
     pub price_decrease_rate: u64,
     /// Number of bids received
     pub bid_count: u64,
@@ -66,10 +76,14 @@ pub struct AuctionAccount {
     pub winning_amount: u64,
     /// Settlement timestamp
     pub settled_at: Option<i64>,
+    /// MPC settlement verification hash
+    pub mpc_verification_hash: Option<[u8; 32]>,
+    /// Whether settlement is authorized
+    pub settlement_authorized: bool,
     /// Bump seed
     pub bump: u8,
     /// Reserved space for future upgrades
-    pub reserved: [u8; 64],
+    pub reserved: [u8; 32],
 }
 
 #[account]
@@ -87,12 +101,16 @@ pub struct BidAccount {
     pub nonce: u128,
     /// Bid timestamp
     pub timestamp: i64,
+    /// Collateral amount deposited
+    pub collateral_amount: u64,
+    /// Collateral token account
+    pub collateral_account: Pubkey,
     /// Whether this bid won the auction
     pub is_winner: bool,
     /// Bump seed
     pub bump: u8,
     /// Reserved space
-    pub reserved: [u8; 32],
+    pub reserved: [u8; 16],
 }
 
 #[account]
@@ -208,3 +226,9 @@ pub const MAX_PROTOCOL_FEE: u16 = 500;
 
 // Maximum bids per auction for gas optimization
 pub const MAX_BIDS_PER_AUCTION: usize = 1000;
+
+// Authority transfer timelock (7 days in seconds)
+pub const AUTHORITY_TRANSFER_TIMELOCK: i64 = 7 * 24 * 60 * 60;
+
+// Minimum price floor for Dutch auctions (basis points, e.g., 100 = 1% of starting price)
+pub const MINIMUM_PRICE_FLOOR_BPS: u16 = 100;

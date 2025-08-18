@@ -27,8 +27,8 @@ use instructions::*;
 use state::*;
 use error::*;
 
-// Program ID will be updated after deployment
-declare_id!("ShadowProtocol11111111111111111111111111111");
+// Program ID - Generated for Shadow Protocol
+declare_id!("Apw2K9F8KRSgie4iS5ea82Vd3XwTtmojQfXPdbxYFCQm");
 
 // Computation definition offsets for encrypted instructions
 // TODO: Re-enable after fixing Arcium imports
@@ -47,8 +47,8 @@ pub mod shadow_protocol {
     /// Initialize a new sealed-bid auction
     pub fn create_sealed_auction(
         ctx: Context<CreateSealedAuction>,
-        auction_id: u64,
         asset_mint: Pubkey,
+        asset_amount: u64,
         duration: u64,
         minimum_bid: u64,
         reserve_price_encrypted: [u8; 32],
@@ -56,8 +56,8 @@ pub mod shadow_protocol {
     ) -> Result<()> {
         instructions::create_sealed_auction(
             ctx,
-            auction_id,
             asset_mint,
+            asset_amount,
             duration,
             minimum_bid,
             reserve_price_encrypted,
@@ -68,20 +68,22 @@ pub mod shadow_protocol {
     /// Initialize a new Dutch auction with hidden reserve
     pub fn create_dutch_auction(
         ctx: Context<CreateDutchAuction>,
-        auction_id: u64,
         asset_mint: Pubkey,
+        asset_amount: u64,
         starting_price: u64,
         price_decrease_rate: u64,
+        minimum_price_floor: u64,
         duration: u64,
         reserve_price_encrypted: [u8; 32],
         reserve_price_nonce: u128,
     ) -> Result<()> {
         instructions::create_dutch_auction(
             ctx,
-            auction_id,
             asset_mint,
+            asset_amount,
             starting_price,
             price_decrease_rate,
+            minimum_price_floor,
             duration,
             reserve_price_encrypted,
             reserve_price_nonce,
@@ -99,6 +101,7 @@ pub mod shadow_protocol {
         bid_amount_encrypted: [u8; 32],
         public_key: [u8; 32],
         nonce: u128,
+        collateral_amount: u64,
         computation_offset: u64,
     ) -> Result<()> {
         instructions::submit_encrypted_bid(
@@ -107,6 +110,7 @@ pub mod shadow_protocol {
             bid_amount_encrypted,
             public_key,
             nonce,
+            collateral_amount,
             computation_offset,
         )
     }
@@ -116,13 +120,23 @@ pub mod shadow_protocol {
         ctx: Context<SubmitDutchBid>,
         auction_id: u64,
         bid_amount: u64,
+        collateral_amount: u64,
     ) -> Result<()> {
-        instructions::submit_dutch_bid(ctx, auction_id, bid_amount)
+        instructions::submit_dutch_bid(ctx, auction_id, bid_amount, collateral_amount)
     }
 
     // ========================================
     // Settlement Instructions
     // ========================================
+
+    /// Authorize settlement after MPC computation verification
+    pub fn authorize_settlement(
+        ctx: Context<AuthorizeSettlement>,
+        auction_id: u64,
+        mpc_verification_hash: [u8; 32],
+    ) -> Result<()> {
+        instructions::authorize_settlement(ctx, auction_id, mpc_verification_hash)
+    }
 
     /// Trigger auction settlement (for sealed-bid auctions)
     pub fn settle_auction(
@@ -209,6 +223,36 @@ pub mod shadow_protocol {
     /// Emergency pause functionality
     pub fn set_pause_state(ctx: Context<SetPauseState>, paused: bool) -> Result<()> {
         instructions::set_pause_state(ctx, paused)
+    }
+
+    /// Update protocol fee (admin only)
+    pub fn update_protocol_fee(ctx: Context<UpdateProtocolFee>, new_fee: u16) -> Result<()> {
+        instructions::update_protocol_fee(ctx, new_fee)
+    }
+
+    /// Update fee recipient (admin only)
+    pub fn update_fee_recipient(ctx: Context<UpdateFeeRecipient>, new_recipient: Pubkey) -> Result<()> {
+        instructions::update_fee_recipient(ctx, new_recipient)
+    }
+
+    /// Initiate protocol authority transfer (admin only, first step)
+    pub fn initiate_authority_transfer(ctx: Context<InitiateAuthorityTransfer>, new_authority: Pubkey) -> Result<()> {
+        instructions::initiate_authority_transfer(ctx, new_authority)
+    }
+
+    /// Complete protocol authority transfer (admin only, second step after timelock)
+    pub fn complete_authority_transfer(ctx: Context<CompleteAuthorityTransfer>) -> Result<()> {
+        instructions::complete_authority_transfer(ctx)
+    }
+
+    /// Cancel pending authority transfer (admin only)
+    pub fn cancel_authority_transfer(ctx: Context<CancelAuthorityTransfer>) -> Result<()> {
+        instructions::cancel_authority_transfer(ctx)
+    }
+
+    /// Transfer protocol authority (admin only) - DEPRECATED: Use initiate/complete pattern instead
+    pub fn transfer_authority(ctx: Context<TransferAuthority>, new_authority: Pubkey) -> Result<()> {
+        instructions::transfer_authority(ctx, new_authority)
     }
 }
 
