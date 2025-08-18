@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Format the response to handle BigInt serialization
-    const formattedAuctions = auctions.map(auction => ({
+    const formattedAuctions = auctions.map((auction: any) => ({
       ...auction,
       auctionId: auction.auctionId.toString(),
       minimumBid: auction.minimumBid.toString(),

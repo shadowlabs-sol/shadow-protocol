@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return NextResponse.json(bids.map(bid => ({
+    return NextResponse.json(bids.map((bid: any) => ({
       ...bid,
       auctionId: bid.auctionId.toString(),
       auction: {

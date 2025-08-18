@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return NextResponse.json(settlements.map(settlement => ({
+    return NextResponse.json(settlements.map((settlement: any) => ({
       ...settlement,
       auctionId: settlement.auctionId.toString(),
       winningAmount: settlement.winningAmount.toString(),
