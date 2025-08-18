@@ -34,7 +34,7 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="flex items-center space-x-2"
           >
-            <div className="w-8 h-8 bg-black rounded-sm" />
+            <img src="/logo.png" alt="Shadow Protocol" className="w-8 h-8 object-contain" />
             <span className="text-xl font-medium tracking-tight">Shadow</span>
           </motion.div>
           
@@ -273,7 +273,7 @@ export default function Home() {
       <footer className="relative z-10 px-8 py-12 md:px-16 border-t border-black/5">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 bg-black rounded-sm" />
+            <img src="/logo.png" alt="Shadow Protocol" className="w-6 h-6 object-contain" />
             <span className="text-sm font-medium">Shadow Protocol</span>
           </div>
           <div className="flex items-center space-x-6">

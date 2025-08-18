@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { WalletProvider } from '@/providers/WalletProvider';
-import { ShadowProtocolProvider } from '@/context/ShadowProtocolContext';
+import { ClientProviders } from '@/components/ClientProviders';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -31,11 +30,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-white text-black antialiased">
         <div className="noise-overlay" />
         <div className="relative z-10">
-          <WalletProvider>
-            <ShadowProtocolProvider>
-              {children}
-            </ShadowProtocolProvider>
-          </WalletProvider>
+          <ClientProviders>
+            {children}
+          </ClientProviders>
         </div>
       </body>
     </html>
