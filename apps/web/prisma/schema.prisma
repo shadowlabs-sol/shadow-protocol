@@ -10,6 +10,8 @@ generator client {
 model Auction {
   id                   String   @id @default(uuid())
   auctionId           BigInt   @unique
+  title               String?
+  description         String?
   creator             String
   assetMint           String
   assetVault          String?
