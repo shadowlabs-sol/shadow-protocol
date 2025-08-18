@@ -2,8 +2,20 @@ import { PublicKey, Connection, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 import { Program, AnchorProvider, Idl, BN, web3 } from '@coral-xyz/anchor';
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import { RescueCipher, x25519 } from '@arcium-hq/client';
-import { randomBytes } from 'crypto';
 import ShadowProtocolIDL from '@/idl/shadow_protocol.json';
+
+// Browser-compatible random bytes generation
+function randomBytes(length: number): Uint8Array {
+  const bytes = new Uint8Array(length);
+  if (typeof window !== 'undefined' && window.crypto) {
+    window.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < length; i++) {
+      bytes[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  return bytes;
+}
 
 // Constants
 export const PROGRAM_ID = new PublicKey('HhniyEPrifbiJg4Hi53m4MjcBtSoyyDr5LkwfsHxb8RC');
@@ -11,6 +23,7 @@ export const PROTOCOL_SEED = Buffer.from('protocol');
 export const AUCTION_SEED = Buffer.from('auction');
 export const BID_SEED = Buffer.from('bid');
 export const ASSET_VAULT_SEED = Buffer.from('asset_vault');
+export const BID_ESCROW_SEED = Buffer.from('bid_escrow');
 
 // Types
 export interface CreateAuctionParams {
@@ -56,6 +69,13 @@ export function getAssetVaultPDA(auctionId: BN): [PublicKey, number] {
 export function getBidPDA(auctionId: BN, bidder: PublicKey): [PublicKey, number] {
   return PublicKey.findProgramAddressSync(
     [BID_SEED, auctionId.toArrayLike(Buffer, 'le', 8), bidder.toBuffer()],
+    PROGRAM_ID
+  );
+}
+
+export function getBidEscrowPDA(auctionId: BN): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [BID_ESCROW_SEED, auctionId.toArrayLike(Buffer, 'le', 8)],
     PROGRAM_ID
   );
 }
@@ -113,7 +133,8 @@ export async function encryptReservePrice(
 }> {
   const priceInLamports = BigInt(Math.floor(price * LAMPORTS_PER_SOL));
   const nonce = randomBytes(16);
-  const nonceValue = Buffer.from(nonce).readBigUInt64LE();
+  // Create BigInt from nonce bytes
+  const nonceValue = BigInt('0x' + Array.from(nonce.slice(0, 8)).map(b => b.toString(16).padStart(2, '0')).join(''));
   
   if (mxePublicKey && mxePublicKey.length === 32) {
     try {
@@ -276,7 +297,7 @@ export class ShadowProtocol {
         auctionId,
         Array.from(encryptedAmount) as any,
         Array.from(publicKey) as any,
-        new BN(Buffer.from(nonce).readBigUInt64LE()),
+        new BN(BigInt('0x' + Array.from(nonce.slice(0, 8)).map(b => b.toString(16).padStart(2, '0')).join('').toString())),
         computationOffset
       )
       .accounts({

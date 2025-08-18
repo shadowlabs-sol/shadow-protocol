@@ -58,9 +58,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // Find the auction
+    // Find the auction - handle both string and number auction IDs
+    const auctionIdBigInt = BigInt(body.auctionId);
     const auction = await prisma.auction.findFirst({
-      where: { auctionId: BigInt(body.auctionId) }
+      where: { auctionId: auctionIdBigInt }
     });
 
     if (!auction) {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
     // Create the bid
     const bid = await prisma.bid.create({
       data: {
-        auctionId: BigInt(body.auctionId),
+        auctionId: auctionIdBigInt,
         auctionDbId: auction.id,
         bidder: body.bidder,
         amountEncrypted: Buffer.from(body.amountEncrypted),

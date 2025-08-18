@@ -14,6 +14,8 @@ import { useShadowProtocol } from '@/context/ShadowProtocolContext';
 import { AuctionCard } from './AuctionCard';
 import { CreateAuctionModal } from './CreateAuctionModal';
 import { AuctionManagementModal } from './AuctionManagementModal';
+import { AuctionFlowIndicator } from './AuctionFlowIndicator';
+import { TestAuction } from './TestAuction';
 import toast, { Toaster } from 'react-hot-toast';
 
 // Countdown timer component
@@ -457,6 +459,21 @@ export const Dashboard: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Auction Flow Indicator for active auction */}
+        {filteredAuctions.length > 0 && filteredAuctions[0].status === 'ACTIVE' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <AuctionFlowIndicator
+              status={filteredAuctions[0].status}
+              bidCount={filteredAuctions[0].bidCount || 0}
+              isEncrypted={true}
+            />
+          </motion.div>
+        )}
+
         {/* Search and Filter Bar */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -649,6 +666,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Test Controls (only in development) */}
+      {process.env.NODE_ENV === 'development' && <TestAuction />}
 
       {/* Modals */}
       <AnimatePresence>
