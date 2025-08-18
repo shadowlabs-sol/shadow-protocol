@@ -16,6 +16,7 @@ import { CreateAuctionModal } from './CreateAuctionModal';
 import { AuctionManagementModal } from './AuctionManagementModal';
 import { AuctionFlowIndicator } from './AuctionFlowIndicator';
 import { TestAuction } from './TestAuction';
+import { WalletBalance } from './WalletBalance';
 import toast, { Toaster } from 'react-hot-toast';
 
 // Countdown timer component
@@ -395,6 +396,8 @@ export const Dashboard: React.FC = () => {
             </motion.div>
 
             <div className="flex items-center space-x-4">
+              <WalletBalance />
+              
               <motion.button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
