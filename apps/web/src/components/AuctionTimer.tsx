@@ -25,17 +25,25 @@ export const AuctionTimer: React.FC<AuctionTimerProps> = ({
   const [autoSettling, setAutoSettling] = useState(false);
   
   useEffect(() => {
+    // Don't run timer for non-active auctions
+    if (status !== 'ACTIVE') {
+      return;
+    }
+    
     const timer = setInterval(async () => {
       const now = Date.now();
       const end = new Date(endTime).getTime();
       const diff = end - now;
       
-      if (diff <= 0 && !isExpired && status === 'ACTIVE') {
+      if (diff <= 0 && !isExpired) {
         setTimeLeft('EXPIRED');
         setIsExpired(true);
         clearInterval(timer);
         
-        // Auto-settle after expiry
+        // DISABLED AUTO-SETTLEMENT TO PREVENT WALLET DRAIN
+        // Auto-settlement should be triggered manually or by a backend service
+        // not by the frontend timer
+        /*
         if (!autoSettling) {
           setAutoSettling(true);
           toast.loading('⏰ Auction expired! Auto-settling...', { id: 'auto-settle' });
@@ -53,6 +61,15 @@ export const AuctionTimer: React.FC<AuctionTimerProps> = ({
             setAutoSettling(false);
           }, 3000);
         }
+        */
+        
+        // Just notify that auction expired
+        toast.error('⏰ Auction has expired! Please settle manually.', {
+          id: `expired-${auctionId}`,
+          duration: 5000
+        });
+        
+        if (onExpiry) onExpiry();
         return;
       }
       

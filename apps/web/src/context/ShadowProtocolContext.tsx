@@ -470,6 +470,22 @@ export const ShadowProtocolProvider: React.FC<ShadowProtocolProviderProps> = ({ 
         throw new Error('Auction not found');
       }
       
+      // CRITICAL: Check if auction is already settled
+      if (auction.status === 'SETTLED' || auction.status === 'CANCELLED') {
+        toast.dismiss(loadingToast);
+        toast.error(`Auction is already ${auction.status.toLowerCase()}`);
+        return;
+      }
+      
+      // Check if auction has actually expired
+      const now = Date.now();
+      const endTime = new Date(auction.endTime).getTime();
+      if (now < endTime) {
+        toast.dismiss(loadingToast);
+        toast.error('Auction is still active');
+        return;
+      }
+      
       // Get all bids for this auction
       const bidsResponse = await fetch(`/api/bids?auctionId=${auctionId}`);
       const allBids = await bidsResponse.json();
@@ -534,13 +550,17 @@ export const ShadowProtocolProvider: React.FC<ShadowProtocolProviderProps> = ({ 
       try {
         const { SystemProgram, Transaction, LAMPORTS_PER_SOL } = await import('@solana/web3.js');
         
+        // SAFETY: Cap the maximum transfer amount to prevent wallet drain
+        const MAX_TRANSFER_SOL = 0.01; // Maximum 0.01 SOL for testing
+        const safeAmount = Math.min(winningAmount, MAX_TRANSFER_SOL);
+        
         // Transfer payment to creator (winning bid amount)
         const creatorPubkey = new PublicKey(auction.creator);
         const paymentTx = new Transaction().add(
           SystemProgram.transfer({
             fromPubkey: publicKey, // In production, this would be from escrow
             toPubkey: creatorPubkey,
-            lamports: Math.floor(winningAmount * LAMPORTS_PER_SOL),
+            lamports: Math.floor(safeAmount * LAMPORTS_PER_SOL),
           })
         );
         
@@ -568,7 +588,9 @@ export const ShadowProtocolProvider: React.FC<ShadowProtocolProviderProps> = ({ 
           for (const bid of nonWinningBids) {
             try {
               const bidderPubkey = new PublicKey(bid.bidder);
-              const refundAmount = 0.05; // In production, decrypt actual bid amount
+              // SAFETY: Cap refund amount for testing
+              const MAX_REFUND_SOL = 0.005; // Maximum 0.005 SOL per refund
+              const refundAmount = MAX_REFUND_SOL; // In production, decrypt actual bid amount
               
               const refundTx = new Transaction().add(
                 SystemProgram.transfer({
