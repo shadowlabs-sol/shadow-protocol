@@ -3,14 +3,19 @@
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Wallet, ChevronDown, LogOut, Copy, ExternalLink } from 'lucide-react';
+import { Wallet, ChevronDown, LogOut, Copy, ExternalLink, Settings, Bell, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { SettingsModal } from './SettingsModal';
+import { NotificationsPanel } from './NotificationsPanel';
 
 export const WalletButton: React.FC = () => {
   const { publicKey, disconnect, wallet, connected, connecting, select, wallets, connect } = useWallet();
   const { setVisible } = useWalletModal();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Listen for wallet selection and auto-connect
@@ -22,6 +27,29 @@ export const WalletButton: React.FC = () => {
       });
     }
   }, [wallet, connected, connecting, connect]);
+
+  // Check for unread notifications
+  useEffect(() => {
+    if (publicKey) {
+      const checkUnread = () => {
+        const key = `notifications_${publicKey.toBase58()}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          try {
+            const notifications = JSON.parse(saved);
+            const unread = notifications.filter((n: any) => !n.read).length;
+            setUnreadCount(unread);
+          } catch (error) {
+            console.error('Failed to load notifications:', error);
+          }
+        }
+      };
+      
+      checkUnread();
+      const interval = setInterval(checkUnread, 5000); // Check every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [publicKey]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -176,13 +204,46 @@ export const WalletButton: React.FC = () => {
                 View on Explorer
               </button>
 
-              <button
-                onClick={handleChangeWallet}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
-              >
-                <Wallet className="w-4 h-4" />
-                Change Wallet
-              </button>
+              <div className="border-t border-gray-800 mt-1 pt-1">
+                <button
+                  onClick={() => {
+                    setNotificationsOpen(true);
+                    setDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Bell className="w-4 h-4" />
+                    Notifications
+                  </div>
+                  {unreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 bg-purple-500 text-white text-xs rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSettingsOpen(true);
+                    setDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </button>
+              </div>
+
+              <div className="border-t border-gray-800 mt-1 pt-1">
+                <button
+                  onClick={handleChangeWallet}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
+                >
+                  <Wallet className="w-4 h-4" />
+                  Change Wallet
+                </button>
+              </div>
 
               <div className="border-t border-gray-800 mt-1 pt-1">
                 <button
@@ -197,6 +258,18 @@ export const WalletButton: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={settingsOpen} 
+        onClose={() => setSettingsOpen(false)} 
+      />
+
+      {/* Notifications Panel */}
+      <NotificationsPanel 
+        isOpen={notificationsOpen} 
+        onClose={() => setNotificationsOpen(false)} 
+      />
     </div>
   );
 };

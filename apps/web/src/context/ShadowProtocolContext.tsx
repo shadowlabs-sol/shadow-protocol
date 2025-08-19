@@ -6,6 +6,7 @@ import { PublicKey, Connection } from '@solana/web3.js';
 import { Program, AnchorProvider, Idl, BN } from '@coral-xyz/anchor';
 import toast from 'react-hot-toast';
 import { ShadowProtocol } from '@/lib/shadowProtocol';
+import { emitNotification } from '@/components/NotificationsPanel';
 
 // Import the Shadow Protocol IDL
 import ShadowProtocolIDL from '@/idl/shadow_protocol.json';
@@ -443,6 +444,14 @@ export const ShadowProtocolProvider: React.FC<ShadowProtocolProviderProps> = ({ 
         icon: '💎'
       });
       
+      // Emit notification
+      emitNotification({
+        type: 'bid',
+        title: 'Bid Submitted',
+        message: `You placed a bid of ${amount} SOL on auction #${auctionId}`,
+        metadata: { auctionId, amount }
+      });
+      
       // Refresh data
       await refreshUserBids();
       await refreshAuctions();
@@ -681,6 +690,24 @@ export const ShadowProtocolProvider: React.FC<ShadowProtocolProviderProps> = ({ 
       
       // Final success message
       toast.success('🎉 Auction Settled Successfully!', { duration: 3000 });
+      
+      // Emit settlement notification
+      emitNotification({
+        type: 'settlement',
+        title: 'Auction Settled',
+        message: `Auction #${auctionId} has been settled. Winner: ${mockWinner.slice(0, 8)}...`,
+        metadata: { auctionId, bidder: mockWinner }
+      });
+      
+      // Notify winner
+      if (mockWinner === publicKey.toBase58()) {
+        emitNotification({
+          type: 'win',
+          title: 'You Won!',
+          message: `Congratulations! You won auction #${auctionId} with a bid of ${winningAmount} SOL`,
+          metadata: { auctionId, amount: winningAmount }
+        });
+      }
       
       await refreshAuctions();
     } catch (error) {
