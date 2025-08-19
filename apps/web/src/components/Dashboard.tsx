@@ -108,7 +108,7 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5, scale: 1.02 }}
-      className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 shadow-lg hover:shadow-purple-200/50 transition-all"
+      className="bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg hover:shadow-[var(--primary)]/20 transition-all"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
@@ -135,7 +135,7 @@ function ActivityFeed({ activities }: { activities: any[] }) {
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 shadow-lg"
+      className="bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg"
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-bold text-gray-900">Live Activity</h3>
@@ -151,7 +151,7 @@ function ActivityFeed({ activities }: { activities: any[] }) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-lg"
               >
                 <div className={`w-2 h-2 rounded-full ${
                   activity.type === 'bid' ? 'bg-blue-500' : 
@@ -301,7 +301,7 @@ export const Dashboard: React.FC = () => {
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-200/20 rounded-full blur-3xl animate-pulse" />
         </div>
 
-        <nav className="relative z-10 border-b border-gray-200 bg-white/80 backdrop-blur-xl">
+        <nav className="relative z-10 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <motion.div 
               className="flex items-center space-x-3"
@@ -357,7 +357,7 @@ export const Dashboard: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 + 0.3 }}
                   whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 shadow-lg hover:shadow-purple-200/50 transition-all"
+                  className="bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg hover:shadow-[var(--primary)]/20 transition-all"
                 >
                   <div className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-4 mx-auto`}>
                     <feature.icon className="w-7 h-7 text-purple-600" />
@@ -391,7 +391,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-xl">
+      <nav className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <motion.div 
@@ -414,7 +414,7 @@ export const Dashboard: React.FC = () => {
               <motion.button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="p-2.5 bg-white rounded-xl border border-gray-200 hover:border-purple-300 transition-all"
+                className="p-2.5 bg-[var(--card)] rounded-xl border border-[var(--border)] hover:border-[var(--primary)] transition-all"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -495,7 +495,7 @@ export const Dashboard: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8 bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-purple-100 shadow-lg"
+          className="mb-8 bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg"
         >
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
@@ -505,19 +505,19 @@ export const Dashboard: React.FC = () => {
                 placeholder="Search auctions by title, description, or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-purple-300 focus:outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-[var(--muted)] rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none transition-all"
               />
             </div>
             
             <div className="flex gap-2">
-              <div className="flex bg-gray-50 rounded-xl p-1">
+              <div className="flex bg-[var(--muted)] rounded-xl p-1">
                 {(['all', 'active', 'ended'] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
                     className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${
                       filter === f 
-                        ? 'bg-white text-purple-600 shadow-md' 
+                        ? 'bg-[var(--card)] text-[var(--primary)] shadow-md' 
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -529,7 +529,7 @@ export const Dashboard: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-4 py-2 bg-gray-50 rounded-xl border border-gray-200 focus:border-purple-300 focus:outline-none transition-all"
+                className="px-4 py-2 bg-[var(--muted)] rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none transition-all"
               >
                 <option value="newest">Newest First</option>
                 <option value="ending">Ending Soon</option>
@@ -566,7 +566,7 @@ export const Dashboard: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-20 bg-white/80 backdrop-blur-xl rounded-2xl border border-purple-100"
+                className="text-center py-20 bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl border border-[var(--border)]"
               >
                 <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">No auctions found</h3>
@@ -596,7 +596,7 @@ export const Dashboard: React.FC = () => {
                     >
                       <div className="relative">
                         {auction.status === 'ACTIVE' && auction.endTime && (
-                          <div className="absolute -top-2 -right-2 z-10 bg-white rounded-full px-3 py-1 shadow-lg border border-purple-200">
+                          <div className="absolute -top-2 -right-2 z-10 bg-[var(--card)] rounded-full px-3 py-1 shadow-lg border border-[var(--border)]">
                             <CountdownTimer endTime={auction.endTime} />
                           </div>
                         )}

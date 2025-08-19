@@ -26,8 +26,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-white text-black antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen bg-[#0a0a0a] text-white antialiased" suppressHydrationWarning>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const savedSettings = localStorage.getItem('shadowProtocolSettings');
+                if (savedSettings) {
+                  try {
+                    const settings = JSON.parse(savedSettings);
+                    if (settings.theme === 'light') {
+                      document.documentElement.setAttribute('data-theme', 'light');
+                    } else if (settings.theme === 'system') {
+                      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                      if (!prefersDark) {
+                        document.documentElement.setAttribute('data-theme', 'light');
+                      }
+                    }
+                  } catch (e) {}
+                }
+              })();
+            `,
+          }}
+        />
         <div className="noise-overlay" />
         <div className="relative z-10">
           <ClientProviders>

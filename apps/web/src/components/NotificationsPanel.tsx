@@ -251,8 +251,8 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
               onClick={() => setFilter('all')}
               className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                 filter === 'all'
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
+                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                  : 'bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
               }`}
             >
               All
@@ -261,8 +261,8 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
               onClick={() => setFilter('unread')}
               className={`flex-1 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                 filter === 'unread'
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
+                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                  : 'bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
               }`}
             >
               Unread ({unreadCount})
@@ -293,19 +293,19 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
         {/* Notifications List */}
         <div className="flex-1 overflow-y-auto">
           {filteredNotifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+            <div className="flex flex-col items-center justify-center h-full text-[var(--muted-foreground)]">
               <Archive className="w-12 h-12 mb-3" />
               <p className="text-sm">No notifications</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-800">
+            <div className="divide-y divide-[var(--border)]">
               {filteredNotifications.map((notification) => (
                 <motion.div
                   key={notification.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 hover:bg-gray-800/50 transition-colors cursor-pointer ${
-                    !notification.read ? 'bg-purple-500/5' : ''
+                  className={`p-4 hover:bg-[var(--muted)]/50 transition-colors cursor-pointer ${
+                    !notification.read ? 'bg-[var(--primary)]/5' : ''
                   }`}
                   onClick={() => markAsRead(notification.id)}
                 >
@@ -316,19 +316,19 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-medium text-[var(--foreground)]">
                             {notification.title}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-[var(--muted-foreground)] mt-1">
                             {notification.message}
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5" />
+                          <div className="w-2 h-2 bg-[var(--primary)] rounded-full mt-1.5" />
                         )}
                       </div>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                        <span className="text-xs text-[var(--muted-foreground)] flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {formatTime(notification.timestamp)}
                         </span>
@@ -337,9 +337,9 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ isOpen, 
                             e.stopPropagation();
                             deleteNotification(notification.id);
                           }}
-                          className="p-1 hover:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="p-1 hover:bg-[var(--secondary)] rounded opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          <X className="w-3 h-3 text-gray-500" />
+                          <X className="w-3 h-3 text-[var(--muted-foreground)]" />
                         </button>
                       </div>
                     </div>

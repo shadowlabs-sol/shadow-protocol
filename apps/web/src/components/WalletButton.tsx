@@ -115,9 +115,9 @@ export const WalletButton: React.FC = () => {
     return (
       <button
         disabled
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-400"
+        className="flex items-center gap-2 px-4 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]"
       >
-        <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-4 h-4 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
         Connecting...
       </button>
     );
@@ -128,7 +128,7 @@ export const WalletButton: React.FC = () => {
       <div className="relative">
         <button
           onClick={handleConnect}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[var(--primary)] to-pink-500 text-[var(--primary-foreground)] font-semibold rounded-lg hover:opacity-90 transition-opacity"
         >
           <Wallet className="w-4 h-4" />
           Connect Wallet
@@ -141,7 +141,7 @@ export const WalletButton: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:border-gray-600 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-lg hover:border-[var(--muted-foreground)] transition-colors"
       >
         {wallet?.adapter.icon && (
           <img 
@@ -150,11 +150,11 @@ export const WalletButton: React.FC = () => {
             className="w-5 h-5"
           />
         )}
-        <span className="text-white font-medium">
+        <span className="text-[var(--foreground)] font-medium">
           {truncateAddress(publicKey.toBase58())}
         </span>
         <ChevronDown 
-          className={`w-4 h-4 text-gray-400 transition-transform ${
+          className={`w-4 h-4 text-[var(--muted-foreground)] transition-transform ${
             dropdownOpen ? 'rotate-180' : ''
           }`}
         />
@@ -167,9 +167,9 @@ export const WalletButton: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-800 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute right-0 mt-2 w-56 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-xl overflow-hidden z-50"
           >
-            <div className="p-3 border-b border-gray-800">
+            <div className="p-3 border-b border-[var(--border)]">
               <div className="flex items-center gap-2 mb-1">
                 {wallet?.adapter.icon && (
                   <img 
@@ -178,11 +178,11 @@ export const WalletButton: React.FC = () => {
                     className="w-5 h-5"
                   />
                 )}
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm font-medium text-[var(--foreground)]">
                   {wallet?.adapter.name}
                 </span>
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-[var(--muted-foreground)]">
                 {publicKey.toBase58()}
               </div>
             </div>
@@ -190,7 +190,7 @@ export const WalletButton: React.FC = () => {
             <div className="p-1">
               <button
                 onClick={copyAddress}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded transition-colors"
               >
                 <Copy className="w-4 h-4" />
                 Copy Address
@@ -198,13 +198,13 @@ export const WalletButton: React.FC = () => {
 
               <button
                 onClick={openExplorer}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
                 View on Explorer
               </button>
 
-              <div className="border-t border-gray-800 mt-1 pt-1">
+              <div className="border-t border-[var(--border)] mt-1 pt-1">
                 <button
                   onClick={() => {
                     setNotificationsOpen(true);
@@ -217,7 +217,7 @@ export const WalletButton: React.FC = () => {
                     Notifications
                   </div>
                   {unreadCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-purple-500 text-white text-xs rounded-full">
+                    <span className="px-1.5 py-0.5 bg-[var(--primary)] text-[var(--primary-foreground)] text-xs rounded-full">
                       {unreadCount}
                     </span>
                   )}
@@ -228,27 +228,27 @@ export const WalletButton: React.FC = () => {
                     setSettingsOpen(true);
                     setDropdownOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded transition-colors"
                 >
                   <Settings className="w-4 h-4" />
                   Settings
                 </button>
               </div>
 
-              <div className="border-t border-gray-800 mt-1 pt-1">
+              <div className="border-t border-[var(--border)] mt-1 pt-1">
                 <button
                   onClick={handleChangeWallet}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded transition-colors"
                 >
                   <Wallet className="w-4 h-4" />
                   Change Wallet
                 </button>
               </div>
 
-              <div className="border-t border-gray-800 mt-1 pt-1">
+              <div className="border-t border-[var(--border)] mt-1 pt-1">
                 <button
                   onClick={handleDisconnect}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--destructive)] hover:bg-[var(--destructive)]/10 rounded transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Disconnect
