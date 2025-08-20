@@ -112,7 +112,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
@@ -122,16 +122,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50"
           >
-            <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-purple-100 overflow-hidden">
+            <div className="relative glass-card backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
               {/* Gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-pink-50 opacity-50" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/5 via-transparent to-[var(--accent)]/5 opacity-50" />
               
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-xl hover:bg-gray-100 transition-colors z-10"
+                className="absolute top-4 right-4 p-2 rounded-xl hover:bg-[var(--muted)] transition-colors z-10"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-[var(--muted-foreground)]" />
               </button>
 
               {currentMode === 'login' ? (
@@ -142,23 +142,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", delay: 0.1 }}
-                      className="inline-flex p-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl mb-4"
+                      className="inline-flex p-4 bg-gradient-to-br from-[var(--primary)]/20 to-[var(--accent)]/20 rounded-2xl mb-4"
                     >
-                      <Shield className="w-12 h-12 text-purple-600" />
+                      <Shield className="w-12 h-12 text-[var(--primary)]" />
                     </motion.div>
                     
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <h2 className="text-3xl font-bold text-gradient">
                       Welcome to Shadow
                     </h2>
-                    <p className="text-gray-600 mt-2">
+                    <p className="text-[var(--muted-foreground)] mt-2">
                       Sign in with your wallet to continue
                     </p>
                   </div>
 
                   {!connected ? (
                     <div className="space-y-4">
-                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                        <p className="text-sm text-yellow-800">
+                      <div className="p-4 bg-[var(--warning)]/10 border border-[var(--warning)]/30 rounded-xl">
+                        <p className="text-sm text-[var(--warning)]">
                           Please connect your wallet first to sign in
                         </p>
                       </div>
@@ -167,19 +167,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={onClose}
-                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold"
+                        className="w-full py-3 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white rounded-xl font-semibold"
                       >
                         Connect Wallet
                       </motion.button>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                      <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary)]/30 rounded-xl">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-purple-900">Connected Wallet</span>
+                          <span className="text-sm font-medium text-[var(--foreground)]">Connected Wallet</span>
                           <CheckCircle className="w-4 h-4 text-green-500" />
                         </div>
-                        <p className="text-xs font-mono text-purple-700">
+                        <p className="text-xs font-mono text-[var(--primary)]">
                           {publicKey?.toBase58().slice(0, 8)}...{publicKey?.toBase58().slice(-8)}
                         </p>
                       </div>
@@ -189,7 +189,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         whileTap={{ scale: 0.98 }}
                         onClick={handleLogin}
                         disabled={isLoading}
-                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-3 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {isLoading ? (
                           <>
@@ -205,7 +205,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       </motion.button>
 
                       <div className="text-center">
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[var(--muted-foreground)]">
                           By signing in, you agree to our Terms of Service and Privacy Policy
                         </p>
                       </div>
@@ -219,7 +219,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <div className="relative inline-block mb-4">
                       <motion.div
                         whileHover={{ scale: 1.05 }}
-                        className="w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white text-3xl font-bold"
+                        className="w-24 h-24 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center text-white text-3xl font-bold"
                       >
                         {profileData.avatar ? (
                           <img 
@@ -233,21 +233,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         )}
                       </motion.div>
                       {isEditing && (
-                        <button className="absolute bottom-0 right-0 p-2 bg-purple-600 text-white rounded-full shadow-lg">
+                        <button className="absolute bottom-0 right-0 p-2 bg-[var(--primary)] text-white rounded-full shadow-lg">
                           <Camera className="w-4 h-4" />
                         </button>
                       )}
                     </div>
                     
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold text-[var(--foreground)]">
                       {profileData.username || 'Anonymous User'}
                     </h2>
-                    <p className="text-sm text-gray-500 font-mono">
+                    <p className="text-sm text-[var(--muted-foreground)] font-mono">
                       {user?.walletAddress.slice(0, 8)}...{user?.walletAddress.slice(-8)}
                     </p>
                     
                     {user?.verified && (
-                      <div className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                      <div className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-[var(--success)]/10 text-[var(--success)] rounded-full text-xs font-medium">
                         <CheckCircle className="w-3 h-3" />
                         Verified
                       </div>
@@ -257,39 +257,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {isEditing ? (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
                           Username
                         </label>
                         <input
                           type="text"
                           value={profileData.username}
                           onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full px-4 py-2 bg-[var(--input)] border border-[var(--input-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-[var(--foreground)]"
                           placeholder="Enter username"
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
                           Email
                         </label>
                         <input
                           type="email"
                           value={profileData.email}
                           onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          className="w-full px-4 py-2 bg-[var(--input)] border border-[var(--input-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-[var(--foreground)]"
                           placeholder="Enter email"
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
                           Bio
                         </label>
                         <textarea
                           value={profileData.bio}
                           onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                          className="w-full px-4 py-2 bg-[var(--input)] border border-[var(--input-border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-[var(--foreground)] resize-none"
                           rows={3}
                           placeholder="Tell us about yourself"
                         />
@@ -301,7 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           whileTap={{ scale: 0.98 }}
                           onClick={handleSaveProfile}
                           disabled={isSaving}
-                          className="flex-1 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2"
+                          className="flex-1 py-2 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white rounded-xl font-semibold flex items-center justify-center gap-2"
                         >
                           {isSaving ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -315,7 +315,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setIsEditing(false)}
-                          className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-semibold"
+                          className="flex-1 py-2 bg-[var(--muted)] text-[var(--foreground)] rounded-xl font-semibold"
                         >
                           Cancel
                         </motion.button>
@@ -324,19 +324,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   ) : (
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                          <p className="text-2xl font-bold text-gray-900">{user?.totalBids || 0}</p>
-                          <p className="text-xs text-gray-600">Total Bids</p>
+                        <div className="p-4 bg-[var(--muted)] rounded-xl">
+                          <p className="text-2xl font-bold text-[var(--foreground)]">{user?.totalBids || 0}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">Total Bids</p>
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                          <p className="text-2xl font-bold text-gray-900">{user?.auctionsWon || 0}</p>
-                          <p className="text-xs text-gray-600">Auctions Won</p>
+                        <div className="p-4 bg-[var(--muted)] rounded-xl">
+                          <p className="text-2xl font-bold text-[var(--foreground)]">{user?.auctionsWon || 0}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">Auctions Won</p>
                         </div>
                       </div>
                       
                       {profileData.bio && (
-                        <div className="p-4 bg-purple-50 rounded-xl">
-                          <p className="text-sm text-gray-700">{profileData.bio}</p>
+                        <div className="p-4 bg-[var(--primary)]/10 rounded-xl">
+                          <p className="text-sm text-[var(--foreground)]">{profileData.bio}</p>
                         </div>
                       )}
                       
@@ -344,7 +344,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setIsEditing(true)}
-                        className="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white rounded-xl font-semibold flex items-center justify-center gap-2"
                       >
                         <Edit2 className="w-4 h-4" />
                         Edit Profile

@@ -108,10 +108,10 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5, scale: 1.02 }}
-      className="bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg hover:shadow-[var(--primary)]/20 transition-all"
+      className="glass-card glass-card-hover rounded-2xl p-6 transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
+        <div className="p-3 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl backdrop-blur-sm border border-purple-500/20">
           <Icon className="w-6 h-6 text-purple-600" />
         </div>
         {change !== undefined && (
@@ -121,10 +121,10 @@ function StatCard({
           </div>
         )}
       </div>
-      <div className="text-2xl font-bold text-gray-900">
+      <div className="text-2xl font-bold text-[var(--foreground)]">
         {prefix}{displayValue.toLocaleString()}{suffix}
       </div>
-      <div className="text-sm text-gray-600 mt-1">{title}</div>
+      <div className="text-sm text-[var(--foreground-dim)] mt-1">{title}</div>
     </motion.div>
   );
 }
@@ -135,11 +135,11 @@ function ActivityFeed({ activities }: { activities: any[] }) {
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg"
+      className="glass-card rounded-2xl p-6"
     >
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-gray-900">Live Activity</h3>
-        <Activity className="w-5 h-5 text-purple-600 animate-pulse" />
+        <h3 className="font-bold text-[var(--foreground)]">Live Activity</h3>
+        <Activity className="w-5 h-5 text-[var(--primary)] animate-pulse" />
       </div>
       <div className="space-y-3 max-h-64 overflow-y-auto">
         {activities.length > 0 ? (
@@ -151,7 +151,7 @@ function ActivityFeed({ activities }: { activities: any[] }) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-lg"
+                className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-lg backdrop-blur-sm hover:bg-[var(--muted-hover)] transition-all"
               >
                 <div className={`w-2 h-2 rounded-full ${
                   activity.type === 'bid' ? 'bg-blue-500' : 
@@ -162,13 +162,13 @@ function ActivityFeed({ activities }: { activities: any[] }) {
                   <span className="font-medium">{activity.user}</span>
                   <span className="text-gray-600"> {activity.action}</span>
                 </div>
-                <span className="text-xs text-gray-500">{activity.time}</span>
+                <span className="text-xs text-[var(--muted-foreground)]">{activity.time}</span>
               </motion.div>
             ))}
           </AnimatePresence>
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Clock className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+          <div className="text-center py-8 text-[var(--foreground-dim)]">
+            <Clock className="w-8 h-8 mx-auto mb-2 text-[var(--muted-foreground)]" />
             <p className="text-sm">No recent activity</p>
             <p className="text-xs mt-1">Activities will appear here when auctions are created or bids are placed</p>
           </div>
@@ -295,13 +295,14 @@ export const Dashboard: React.FC = () => {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-200/20 rounded-full blur-3xl animate-pulse" />
+      <div className="min-h-screen">
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute top-20 left-20 w-[500px] h-[500px] bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-full blur-[120px] animate-float" />
+          <div className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/10 to-cyan-500/5 rounded-full blur-[120px] animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-violet-500/5 to-indigo-500/5 rounded-full blur-[150px]" />
         </div>
 
-        <nav className="relative z-10 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
+        <nav className="relative z-10 border-b border-[var(--border)] bg-[var(--glass)] backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <motion.div 
               className="flex items-center space-x-3"
@@ -316,7 +317,7 @@ export const Dashboard: React.FC = () => {
                 />
                 <img src="/logo.png" alt="Shadow Protocol" className="relative w-10 h-10 object-contain" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold text-gradient">
                 Shadow Protocol
               </span>
             </motion.div>
@@ -344,7 +345,7 @@ export const Dashboard: React.FC = () => {
               </h1>
             </motion.div>
             
-            <p className="text-xl text-gray-600 mb-12 leading-relaxed">
+            <p className="text-xl text-[var(--foreground-dim)] mb-12 leading-relaxed">
               Connect your wallet to start trading in complete privacy.
               No bots, no front-running, just fair auctions.
             </p>
@@ -357,13 +358,13 @@ export const Dashboard: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 + 0.3 }}
                   whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg hover:shadow-[var(--primary)]/20 transition-all"
+                  className="glass-card glass-card-hover rounded-2xl p-6 transition-all duration-300"
                 >
-                  <div className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-4 mx-auto`}>
-                    <feature.icon className="w-7 h-7 text-purple-600" />
+                  <div className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-4 mx-auto backdrop-blur-sm border border-white/10`}>
+                    <feature.icon className="w-7 h-7 text-[var(--primary)]" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
+                  <h3 className="font-bold text-lg mb-2 text-[var(--foreground)]">{feature.title}</h3>
+                  <p className="text-[var(--foreground-dim)] text-sm">{feature.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -381,17 +382,18 @@ export const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen">
       <Toaster position="top-right" />
       
       {/* Background effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-purple-200/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-200/10 rounded-full blur-3xl animate-pulse" />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-20 left-20 w-[500px] h-[500px] bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/10 to-cyan-500/5 rounded-full blur-[120px] animate-float" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-violet-500/5 to-indigo-500/5 rounded-full blur-[150px]" />
       </div>
 
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-xl">
+      <nav className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--glass)] backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <motion.div 
@@ -401,10 +403,10 @@ export const Dashboard: React.FC = () => {
             >
               <img src="/logo.png" alt="Shadow" className="w-10 h-10" />
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold text-gradient">
                   Shadow Protocol
                 </h1>
-                <p className="text-xs text-gray-600">Private Auctions on Solana</p>
+                <p className="text-xs text-[var(--foreground-dim)]">Private Auctions on Solana</p>
               </div>
             </motion.div>
 
@@ -414,16 +416,16 @@ export const Dashboard: React.FC = () => {
               <motion.button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="p-2.5 bg-[var(--card)] rounded-xl border border-[var(--border)] hover:border-[var(--primary)] transition-all"
+                className="p-2.5 glass-card rounded-xl hover:shadow-[var(--glow)] transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <RefreshCw className={`w-5 h-5 text-gray-700 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-5 h-5 text-[var(--foreground-dim)] ${isRefreshing ? 'animate-spin' : ''}`} />
               </motion.button>
               
               <motion.button
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-200/50 transition-all"
+                className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white rounded-xl font-semibold hover:shadow-[var(--glow)] transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -444,8 +446,8 @@ export const Dashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-purple-600" />
+          <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6 flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-[var(--primary)]" />
             Network Statistics
           </h2>
           
@@ -495,17 +497,17 @@ export const Dashboard: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8 bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border)] shadow-lg"
+          className="mb-8 glass-card rounded-2xl p-6"
         >
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" />
               <input
                 type="text"
                 placeholder="Search auctions by title, description, or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-[var(--muted)] rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-[var(--input)] rounded-xl border border-[var(--input-border)] focus:border-[var(--primary)] focus:outline-none focus:shadow-[var(--glow)] transition-all duration-300"
               />
             </div>
             
@@ -515,10 +517,10 @@ export const Dashboard: React.FC = () => {
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`px-4 py-2 rounded-lg font-medium capitalize transition-all ${
+                    className={`px-4 py-2 rounded-lg font-medium capitalize transition-all duration-300 ${
                       filter === f 
-                        ? 'bg-[var(--card)] text-[var(--primary)] shadow-md' 
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-[var(--glow)]' 
+                        : 'text-[var(--foreground-dim)] hover:text-[var(--foreground)]'
                     }`}
                   >
                     {f}
@@ -529,7 +531,7 @@ export const Dashboard: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-4 py-2 bg-[var(--muted)] rounded-xl border border-[var(--border)] focus:border-[var(--primary)] focus:outline-none transition-all"
+                className="px-4 py-2 bg-[var(--input)] rounded-xl border border-[var(--input-border)] focus:border-[var(--primary)] focus:outline-none focus:shadow-[var(--glow)] transition-all duration-300"
               >
                 <option value="newest">Newest First</option>
                 <option value="ending">Ending Soon</option>
@@ -543,13 +545,13 @@ export const Dashboard: React.FC = () => {
           {/* Auctions Grid */}
           <div className="lg:col-span-2">
             <motion.h2 
-              className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2"
+              className="text-xl font-bold text-[var(--foreground)] mb-6 flex items-center gap-2"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <Sparkles className="w-5 h-5 text-purple-600" />
+              <Sparkles className="w-5 h-5 text-[var(--primary)]" />
               Live Auctions
-              <span className="ml-2 px-2 py-1 bg-purple-100 text-purple-600 text-xs font-semibold rounded-full">
+              <span className="ml-2 px-2 py-1 bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-semibold rounded-full">
                 {filteredAuctions.length}
               </span>
             </motion.h2>
@@ -566,16 +568,16 @@ export const Dashboard: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-20 bg-[var(--card)]/90 backdrop-blur-xl rounded-2xl border border-[var(--border)]"
+                className="text-center py-20 glass-card rounded-2xl"
               >
-                <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">No auctions found</h3>
-                <p className="text-gray-500 mb-6">
+                <AlertCircle className="w-16 h-16 text-[var(--muted-foreground)] mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">No auctions found</h3>
+                <p className="text-[var(--foreground-dim)] mb-6">
                   {searchQuery ? 'Try adjusting your search' : 'Be the first to create one!'}
                 </p>
                 <motion.button
                   onClick={() => setShowCreateModal(true)}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold"
+                  className="px-6 py-3 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white rounded-xl font-semibold shadow-[var(--glow)]"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -641,11 +643,11 @@ export const Dashboard: React.FC = () => {
           {/* Activity Feed */}
           <div className="lg:col-span-1">
             <motion.h2 
-              className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2"
+              className="text-xl font-bold text-[var(--foreground)] mb-6 flex items-center gap-2"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <Activity className="w-5 h-5 text-purple-600" />
+              <Activity className="w-5 h-5 text-[var(--primary)]" />
               Recent Activity
             </motion.h2>
             
@@ -656,25 +658,25 @@ export const Dashboard: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mt-6 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-6 text-white"
+              className="mt-6 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-2xl p-6 text-white shadow-[var(--glow)]"
             >
               <h3 className="font-bold mb-4 flex items-center gap-2">
-                <PieChart className="w-5 h-5" />
+                <PieChart className="w-5 h-5 text-white" />
                 Your Wallet
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-purple-100">Address</span>
+                  <span className="text-white/80">Address</span>
                   <span className="font-bold font-mono text-xs">
                     {publicKey ? `${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}` : '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-purple-100">Network</span>
+                  <span className="text-white/80">Network</span>
                   <span className="font-bold">Devnet</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-purple-100">Status</span>
+                  <span className="text-white/80">Status</span>
                   <span className="font-bold">Connected</span>
                 </div>
               </div>

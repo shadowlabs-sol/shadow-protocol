@@ -27,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-[#0a0a0a] text-white antialiased" suppressHydrationWarning>
+      <body className="min-h-screen antialiased" suppressHydrationWarning>
         <script
           dangerouslySetInnerHTML={{
             __html: `

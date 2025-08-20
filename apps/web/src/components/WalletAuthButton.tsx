@@ -120,9 +120,9 @@ export const WalletAuthButton: React.FC = () => {
     return (
       <button
         disabled
-        className="flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-purple-200/20 rounded-xl text-gray-600"
+        className="flex items-center gap-2 px-5 py-2.5 bg-[var(--muted)] backdrop-blur-sm border border-[var(--border)] rounded-xl text-[var(--muted-foreground)]"
       >
-        <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-4 h-4 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
         Connecting...
       </button>
     );
@@ -133,7 +133,7 @@ export const WalletAuthButton: React.FC = () => {
       <div className="relative">
         <motion.button
           onClick={handleConnect}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-200/50 transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white font-semibold rounded-xl hover:shadow-[var(--glow)] transition-all"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -149,7 +149,7 @@ export const WalletAuthButton: React.FC = () => {
       <div className="relative" ref={dropdownRef}>
         <motion.button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="flex items-center gap-3 px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-purple-100 rounded-xl hover:border-purple-300 transition-all group"
+          className="flex items-center gap-3 px-4 py-2.5 glass-card rounded-xl hover:shadow-[var(--glow)] transition-all group"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -168,13 +168,13 @@ export const WalletAuthButton: React.FC = () => {
                 className="w-8 h-8 rounded-lg"
               />
             ) : (
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-lg flex items-center justify-center text-white text-sm font-bold">
                 {publicKey.toBase58().charAt(0).toUpperCase()}
               </div>
             )}
             
             {/* Auth Status Indicator */}
-            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--background)] ${
               isAuthenticated ? 'bg-green-500' : 'bg-yellow-500'
             }`} />
           </div>
@@ -182,22 +182,22 @@ export const WalletAuthButton: React.FC = () => {
           <div className="flex flex-col items-start">
             {user?.username ? (
               <>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-[var(--foreground)]">
                   {user.username}
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-[var(--muted-foreground)]">
                   {truncateAddress(publicKey.toBase58())}
                 </span>
               </>
             ) : (
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm font-medium text-[var(--foreground)]">
                 {truncateAddress(publicKey.toBase58())}
               </span>
             )}
           </div>
           
           <ChevronDown 
-            className={`w-4 h-4 text-gray-400 transition-transform group-hover:text-gray-600 ${
+            className={`w-4 h-4 text-[var(--muted-foreground)] transition-transform ${
               dropdownOpen ? 'rotate-180' : ''
             }`}
           />
@@ -215,13 +215,13 @@ export const WalletAuthButton: React.FC = () => {
                 damping: 20,
                 duration: 0.15 
               }}
-              className="absolute right-0 mt-3 w-80 bg-white/98 backdrop-blur-2xl border border-purple-100/50 rounded-3xl shadow-2xl shadow-purple-200/20 overflow-hidden z-50"
+              className="absolute right-0 mt-3 w-80 glass-card backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden z-50"
             >
               {/* User Info Section */}
-              <div className="relative p-4 bg-gradient-to-br from-purple-50 to-pink-50 border-b border-purple-100">
+              <div className="relative p-4 bg-gradient-to-br from-[var(--primary)]/10 to-[var(--accent)]/10 border-b border-[var(--border)]">
                 {isRefreshing && (
                   <div className="absolute top-2 right-2">
-                    <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
+                    <Loader2 className="w-4 h-4 text-[var(--primary)] animate-spin" />
                   </div>
                 )}
                 <div className="flex items-center gap-3">
@@ -233,7 +233,7 @@ export const WalletAuthButton: React.FC = () => {
                         className="w-12 h-12 rounded-xl object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl flex items-center justify-center text-white text-lg font-bold">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-xl flex items-center justify-center text-white text-lg font-bold">
                         {user?.username?.charAt(0).toUpperCase() || 
                          publicKey.toBase58().charAt(0).toUpperCase()}
                       </div>
@@ -248,17 +248,17 @@ export const WalletAuthButton: React.FC = () => {
                   <div className="flex-1">
                     {isAuthenticated ? (
                       <>
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-[var(--foreground)]">
                           {user?.username || 'Anonymous'}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[var(--muted-foreground)]">
                           {wallet?.adapter.name}
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="font-semibold text-gray-900">Not Signed In</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="font-semibold text-[var(--foreground)]">Not Signed In</p>
+                        <p className="text-xs text-[var(--muted-foreground)]">
                           {wallet?.adapter.name}
                         </p>
                       </>
@@ -275,49 +275,49 @@ export const WalletAuthButton: React.FC = () => {
                     transition={{ delay: 0.1, duration: 0.2 }}
                   >
                     <motion.div 
-                      className="text-center p-2.5 bg-white/70 backdrop-blur-sm rounded-xl hover:bg-white/80 transition-all cursor-pointer"
+                      className="text-center p-2.5 bg-[var(--muted)] backdrop-blur-sm rounded-xl hover:bg-[var(--muted-hover)] transition-all cursor-pointer"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <motion.p 
-                        className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                        className="text-xl font-bold text-gradient"
                         key={user?.totalBids}
                         initial={{ scale: 0.8 }}
                         animate={{ scale: 1 }}
                       >
                         {user?.totalBids || 0}
                       </motion.p>
-                      <p className="text-xs text-gray-600 font-medium">Bids</p>
+                      <p className="text-xs text-[var(--muted-foreground)] font-medium">Bids</p>
                     </motion.div>
                     <motion.div 
-                      className="text-center p-2.5 bg-white/70 backdrop-blur-sm rounded-xl hover:bg-white/80 transition-all cursor-pointer"
+                      className="text-center p-2.5 bg-[var(--muted)] backdrop-blur-sm rounded-xl hover:bg-[var(--muted-hover)] transition-all cursor-pointer"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <motion.p 
-                        className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                        className="text-xl font-bold text-gradient"
                         key={user?.auctionsWon}
                         initial={{ scale: 0.8 }}
                         animate={{ scale: 1 }}
                       >
                         {user?.auctionsWon || 0}
                       </motion.p>
-                      <p className="text-xs text-gray-600 font-medium">Won</p>
+                      <p className="text-xs text-[var(--muted-foreground)] font-medium">Won</p>
                     </motion.div>
                     <motion.div 
-                      className="text-center p-2.5 bg-white/70 backdrop-blur-sm rounded-xl hover:bg-white/80 transition-all cursor-pointer"
+                      className="text-center p-2.5 bg-[var(--muted)] backdrop-blur-sm rounded-xl hover:bg-[var(--muted-hover)] transition-all cursor-pointer"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <motion.p 
-                        className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                        className="text-xl font-bold text-gradient"
                         key={user?.totalVolume}
                         initial={{ scale: 0.8 }}
                         animate={{ scale: 1 }}
                       >
                         {user?.totalVolume ? `${(Number(user.totalVolume) / 1e9).toFixed(1)}` : '0'}
                       </motion.p>
-                      <p className="text-xs text-gray-600 font-medium">SOL</p>
+                      <p className="text-xs text-[var(--muted-foreground)] font-medium">SOL</p>
                     </motion.div>
                   </motion.div>
                 )}
@@ -327,7 +327,7 @@ export const WalletAuthButton: React.FC = () => {
                 {!isAuthenticated ? (
                   <motion.button
                     onClick={handleLogin}
-                    className="w-full flex items-center gap-3 px-4 py-3 mb-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-purple-200/50 transition-all"
+                    className="w-full flex items-center gap-3 px-4 py-3 mb-2 bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white font-semibold rounded-2xl hover:shadow-[var(--glow)] transition-all"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -339,10 +339,10 @@ export const WalletAuthButton: React.FC = () => {
                   <>
                     <motion.button
                       onClick={handleProfile}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-xl transition-all group"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded-xl transition-all group"
                       whileHover={{ x: 2 }}
                     >
-                      <User className="w-4 h-4 text-purple-600" />
+                      <User className="w-4 h-4 text-[var(--primary)]" />
                       <span className="font-medium">My Profile</span>
                       <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                     </motion.button>
@@ -351,7 +351,7 @@ export const WalletAuthButton: React.FC = () => {
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-xl transition-all relative group"
                       whileHover={{ x: 2 }}
                     >
-                      <Bell className="w-4 h-4 text-purple-600" />
+                      <Bell className="w-4 h-4 text-[var(--primary)]" />
                       <span className="font-medium">Notifications</span>
                       <span className="ml-auto px-2 py-0.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full animate-pulse">
                         3
@@ -359,21 +359,21 @@ export const WalletAuthButton: React.FC = () => {
                     </motion.button>
                     
                     <motion.button
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-xl transition-all group"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded-xl transition-all group"
                       whileHover={{ x: 2 }}
                     >
-                      <Settings className="w-4 h-4 text-purple-600" />
+                      <Settings className="w-4 h-4 text-[var(--primary)]" />
                       <span className="font-medium">Settings</span>
                       <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                     </motion.button>
                   </>
                 )}
 
-                <div className="border-t border-gray-200 my-2" />
+                <div className="border-t border-[var(--border)] my-2" />
 
                 <button
                   onClick={copyAddress}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-colors"
                 >
                   <Copy className="w-4 h-4" />
                   Copy Address
@@ -381,7 +381,7 @@ export const WalletAuthButton: React.FC = () => {
 
                 <button
                   onClick={openExplorer}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-colors"
                 >
                   <ExternalLink className="w-4 h-4" />
                   View on Explorer
@@ -389,17 +389,17 @@ export const WalletAuthButton: React.FC = () => {
 
                 <button
                   onClick={handleChangeWallet}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-colors"
                 >
                   <Wallet className="w-4 h-4" />
                   Change Wallet
                 </button>
 
-                <div className="border-t border-gray-200 my-2" />
+                <div className="border-t border-[var(--border)] my-2" />
 
                 <button
                   onClick={handleDisconnect}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm text-[var(--destructive)] hover:bg-[var(--destructive)]/10 rounded-lg transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Disconnect
